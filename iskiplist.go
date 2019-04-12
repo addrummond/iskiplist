@@ -65,8 +65,8 @@ import (
 	"unsafe"
 )
 
-// This is approximately 1/e, which according to the following article is the
-// optimal value for a general purpose skip list.
+// This is approximately (1/e)*UINT32_MAX. According to the following article,
+// 1/e is the optimal value for a general purpose skip list.
 // https://www.sciencedirect.com/science/article/pii/030439759400296U
 const pWithUint32Denom = 1580030168
 
