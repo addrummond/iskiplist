@@ -250,7 +250,7 @@ func insertAfter(node *listNode, after *listNode) {
 	node.next = after
 }
 
-// Length returns the length of an ISkipList
+// Length returns the length of an ISkipList. It runs in constant time.
 func (l *ISkipList) Length() int {
 	return l.length
 }
