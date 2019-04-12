@@ -14,3 +14,7 @@ feasible, you can modify `ElemType`, `elemToDist` and `distToElem`.
 
 Each `ISkipList` maintains its own local PCG pseudorandom number generator
 state.
+
+Full documentation:
+
+https://godoc.org/github.com/addrummond/iskiplist
