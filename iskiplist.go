@@ -218,8 +218,8 @@ func (c *indexCache) isValid() bool {
 }
 
 // ISkipList is an indexable skip list. It behaves like an array or slice
-// (elements sequenced and accessed by index) rather than a dictionary (elements
-// not sequenced and accessed by key).
+// (elements sequenced and accessed by index) rather than a map (elements not
+// sequenced and accessed by key).
 type ISkipList struct {
 	length  int
 	nLevels int32 // number of levels - 1; int32 is more than enough for this, saves a bit of space on archs that allow 4-byte align
