@@ -44,8 +44,7 @@
 // see any benefit from using an ISkipList unless you are dealing with sequences
 // of more than 1000 elements. Once you get up to around 10,000 elements,
 // insertions and removals targetting the middle of an ISkipList are much
-// faster. (The precise numbers of course depend on architecture and other
-// factors.)
+// faster.
 //
 // 2) It takes much longer to create an ISkipList by sequentially appending
 // elements than it does to do the same with a slice. Profiling suggests that
