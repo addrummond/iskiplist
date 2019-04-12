@@ -439,7 +439,7 @@ func (l *ISkipList) Copy() *ISkipList {
 // CopyRange creates a new ISkipList whose contents are equal to a range of
 // the original ISkipList. The 'from' argument must be >= 0 and < the length of
 // the ISkipList. The 'to' argument must be >= 0 and <= the length of the
-// ISkipList. If neither 'from' nor 'to' is out of bounds, but to <= from, then
+// ISkipList. If neither 'from' nor 'to' is out of bounds but to <= from, then
 // this is a no-op.
 func (l *ISkipList) CopyRange(from, to int) *ISkipList {
 	// TODO: This should be replaced with a specialized implementation, as for
@@ -495,7 +495,7 @@ func (l *ISkipList) Update(i int, upd func(ElemType) ElemType) {
 // CopyRangeToSlice copies a range of the ISkipList to a slice. The 'from'
 // argument must be >= 0 and < the length of the ISkipList. The 'to' argument
 // must be >= 0 and <= the length of the ISkipList. If neither 'from' nor 'to'
-// is out of bounds, but to <= from, then this is a no-op.
+// is out of bounds but to <= from, then this is a no-op.
 func (l *ISkipList) CopyRangeToSlice(from, to int, slice []ElemType) {
 	if from < 0 || from >= l.length {
 		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", from, l))
@@ -526,7 +526,7 @@ func (l *ISkipList) CopyToSlice(slice []ElemType) {
 // function a pointer to each element visited. The iteration is halted if the
 // function returns false. The 'from' argument must be >= 0 and < the length of
 // the ISkipList. The 'to' argument must be >= 0 and <= the length of the
-// ISkipList. If neither 'from' nor 'to' is out of bounds, but to <= from, then
+// ISkipList. If neither 'from' nor 'to' is out of bounds but to <= from, then
 // this is a no-op. Element pointers remain valid following any subsequent
 // operations on the ISkipList. Keeping a pointer to a deleted element will
 // prevent full garbage collection of the associated skip list nodes.
@@ -557,7 +557,7 @@ func (l *ISkipList) IterateRange(from, to int, f func(*ElemType) bool) {
 // supplied function the index of each visited element and a pointer to it. The
 // iteration is halted if the function returns false. The 'from' argument must
 // be >= 0 and < the length of the ISkipList. The 'to' argument must be >= 0 and
-// <= the length of the ISkipList. If neither 'from' nor 'to' is out of bounds,
+// <= the length of the ISkipList. If neither 'from' nor 'to' is out of bounds
 // but to <= from, then this is a no-op. Element pointers remain valid following
 // any subsequent operations on the ISkipList. Keeping a pointer to a deleted
 // element will prevent full garbage collection of the associated skip list
