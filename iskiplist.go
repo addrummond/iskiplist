@@ -983,10 +983,6 @@ func (l *ISkipList) Insert(index int, elem ElemType) {
 		copyToCache(l, index-1, prevs, prevIndices)
 	}
 
-	if node == nil {
-		panic("Internal error in 'Insert'")
-	}
-
 	after := &listNode{
 		elem: elem,
 	}
