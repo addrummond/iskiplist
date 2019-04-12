@@ -1,0 +1,421 @@
+package iskiplist
+
+import (
+	"fmt"
+	"testing"
+)
+
+const (
+	randSeed1 = 12345
+	randSeed2 = 67891
+)
+
+func TestCopy(t *testing.T) {
+	var sl ISkipList
+	sl.Seed(randSeed1, randSeed2)
+	for i := 0; i < 10; i++ {
+		sl.PushBack(i)
+	}
+	sl2 := sl.Copy()
+	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", debugPrintISkipList(sl2, 3))
+}
+
+func TestInsertAtBeginning(t *testing.T) {
+	var sl ISkipList
+	// 12333
+	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
+	for i := 0; i < 10; i++ {
+		fmt.Printf("%v\n", debugPrintISkipList(&sl, 3))
+		sl.Insert(0, i)
+	}
+	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+	if sl.nLevels+1 != 3 {
+		t.Errorf("Unexpected number of levels in result (expected 3, got %v)\n", sl.nLevels+1)
+	}
+}
+
+// TestCreateAndIter creates some ISkipLists using Insert and runs some simple
+// tests of the basic ISkipList operations.
+func TestCreateAndIter(t *testing.T) {
+	type insert struct {
+		index int
+		value int
+	}
+	type tst struct {
+		inserts []insert
+		result  []int
+	}
+
+	tsts := []tst{
+		{[]insert{{0, 0}, {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}, {8, 8}, {9, 9}, {10, 10}},
+			[]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		},
+		{[]insert{{0, 10}, {0, 9}, {0, 8}, {0, 7}, {0, 6}, {0, 5}, {0, 4}, {0, 3}, {0, 2}, {0, 1}, {0, 0}},
+			[]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		},
+	}
+
+	for _, ts := range tsts {
+		var sl ISkipList
+		sl.Seed(randSeed1, randSeed2)
+
+		for _, ins := range ts.inserts {
+			t.Logf("Inserting %v at %v\n", ins.value, ins.index)
+			sl.Insert(ins.index, ins.value)
+		}
+
+		if sl.Length() != len(ts.result) {
+			t.Errorf("Error mismatch: ISKipList has length %v; expected result has length %v\n", sl.Length(), len(ts.result))
+		}
+
+		// Test iterating through the list using At()
+		for i, v := range ts.result {
+			t.Logf("At %v\n", i)
+			slv := sl.At(i)
+			if slv != v {
+				t.Errorf("ISkipList[%v] = %v, expectedResult[%v] = %v\n", i, slv, i, v)
+			}
+		}
+
+		// Test iterating through the by copying it to a slice.
+		cpy := make([]int, len(ts.result))
+		sl.CopyToSlice(cpy)
+		for i, v := range cpy {
+			if v != ts.result[i] {
+				t.Errorf("sliceCopy[%v] = %v, expectedResult[%v] = %v\n", i, v, i, ts.result[i])
+			}
+		}
+
+		// Test iterating through part of the list by copying it to a slice.
+		middle := make([]int, len(ts.result)-4)
+		sl.CopyRangeToSlice(2, sl.Length()-2, middle)
+		for i, v := range middle {
+			if v != ts.result[i+2] {
+				t.Errorf("middle[%v] = %v, expectedResult[%v] = %v\n", i, v, i+2, ts.result[i+2])
+			}
+		}
+
+		// Test iterating through the list using Iterate()
+		i := 0
+		sl.Iterate(func(e *ElemType) bool {
+			if *e != ts.result[i] {
+				t.Errorf("Expected value %v in iteration, got %v at index %v\n", ts.result[i], *e, i)
+			}
+			i++
+			return true
+		})
+		i = 0
+		sl.IterateI(func(j int, e *ElemType) bool {
+			if *e != ts.result[i] {
+				t.Errorf("Expected value %v in iteration, got %v at index %v\n", ts.result[i], *e, i)
+			}
+			if i != j {
+				t.Errorf("Unexpected index in iteration: %v vs. %v\n", i, j)
+			}
+			i++
+			return true
+		})
+	}
+}
+
+// TestInsertAndSwap runs a simple test of the Insert() and Swap() methods.
+func TestInsertAndSwap(t *testing.T) {
+	var expected = []int{
+		0, 1, 99, 99, 4, 88, 2, 3, 88, 5, 6, 7, 8, 9,
+	}
+
+	var sl ISkipList
+	sl.Seed(randSeed1, randSeed2)
+	for i := 0; i < 10; i++ {
+		t.Logf("Inserting %v\n", i)
+		sl.Insert(i, i)
+		t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+	}
+	for i := 0; i < 2; i++ {
+		t.Logf("Inserting 99\n")
+		sl.Insert(2, 99)
+		t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+	}
+	for i := 0; i < 2; i++ {
+		t.Logf("Inserting 88\n")
+		sl.Insert(4, 88)
+		t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+	}
+
+	sl.Swap(4, 8)
+	t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+
+	if sl.Length() != len(expected) {
+		t.Errorf("Expected length %v, actual length %v\n", len(expected), sl.Length())
+	}
+
+	t.Logf("Length %v\n", sl.Length())
+	for i := 0; i < sl.Length(); i++ {
+		t.Logf("Elem at %v: %v\n", i, sl.At(i))
+		if sl.At(i) != expected[i] {
+			t.Errorf("Expected value %v at index %v, got %v\n", expected[i], i, sl.At(i))
+		}
+	}
+}
+
+// This test creates random sequences of Insert, Swap and Remove operations and
+// then applies these operations to both an ISkipList and a slice. The end
+// results should match.
+func TestRandomOpSequences(t *testing.T) {
+	var sl ISkipList
+	sl.Seed(randSeed1, randSeed2)
+	for i := 1; i < 100; i++ {
+		t.Logf("----- Generating random sequence of %v operations -----\n", i)
+		ops := genOps(i)
+		sl.Clear()
+		a := make([]int, 0)
+		for _, o := range ops {
+			t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+			t.Logf("%s\n", printOp(&o))
+			applyToSlice(&o, &a)
+			applyToISkipList(&o, &sl)
+		}
+
+		t.Logf("Reported lengths: %v %v\n", sl.Length(), len(a))
+
+		if len(a) != sl.Length() {
+			t.Errorf("ISkipList has wrong length (%v instead of %v)\n", sl.Length(), len(a))
+		}
+
+		// Equality check by looping over indices.
+		t.Logf("Testing result via index loop...\n")
+		for i, v := range a {
+			t.Logf("Checking %v\n", i)
+			e := sl.At(i)
+			if v != e {
+				t.Errorf("Expected value %v at index %v, got %v instead (index loop).\n", v, i, e)
+			}
+		}
+
+		// Equality check using ForAllI
+		t.Logf("Testing result via ForAllI()...")
+		sl.ForAllI(func(i int, v *ElemType) {
+			t.Logf("Checking %v\n", i)
+			if *v != a[i] {
+				t.Errorf("Expected value %v at index %v, got %v instead (ForAllI).\n", a[i], i, *v)
+			}
+		})
+
+		// Copy and then check copy has expected elements using ForAllI.
+		cp := sl.Copy()
+		cp.ForAllI(func(i int, v *ElemType) {
+			t.Logf("Checking %v\n", i)
+			if *v != a[i] {
+				t.Errorf("Expected value %v at index %v, got %v instead (ForAllI).\n", a[i], i, *v)
+			}
+		})
+	}
+}
+
+func benchmarkRandomOpSequenceWithISKipList(ops []op, sl *ISkipList, l int) {
+	for _, o := range ops {
+		applyToISkipList(&o, sl)
+	}
+}
+
+func benchmarkRandomOpSequenceWithSlice(ops []op, a []int, l int) {
+	for _, o := range ops {
+		applyToSlice(&o, &a)
+	}
+}
+
+func BenchmarkRandomOpSequence(b *testing.B) {
+	const nops = 500
+
+	ops := genOps(nops)
+
+	for i := 0; i < 100000; i += 1000 {
+		var sl ISkipList
+		sl.Seed(randSeed1, randSeed2)
+		for j := 0; j < i; j++ {
+			sl.PushBack(j)
+		}
+		b.Run(fmt.Sprintf("With ISkipList [initial length %v, n_ops=%v]", i, nops), func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				benchmarkRandomOpSequenceWithISKipList(ops, &sl, nops)
+			}
+		})
+
+		a := make([]int, i)
+		for j := 0; j < i; j++ {
+			a[j] = j
+		}
+		b.Run(fmt.Sprintf("With slice [initial length %v, n_ops=%v]", i, nops), func(b *testing.B) {
+
+			for j := 0; j < b.N; j++ {
+				benchmarkRandomOpSequenceWithSlice(ops, a, nops)
+			}
+		})
+	}
+}
+
+func BenchmarkStartInsert(b *testing.B) {
+	for i := 0; i < 5000; i += 100 {
+		b.Run(fmt.Sprintf("Creating ISkipList of length %v using start insert", i), func(b *testing.B) {
+			var sl ISkipList
+			for j := 0; j < b.N; j++ {
+				sl.Clear()
+				sl.Seed(randSeed1, randSeed2)
+
+				for k := 0; k < i; k++ {
+					sl.Insert(0, k)
+				}
+			}
+			//b.Logf("Levels: %v\n", sl.nLevels+1)
+		})
+	}
+}
+
+func BenchmarkEndInsert(b *testing.B) {
+	for i := 0; i < 5000; i += 100 {
+		b.Run(fmt.Sprintf("Creating ISkipList of length %v using end insert", i), func(b *testing.B) {
+			var sl ISkipList
+			for j := 0; j < b.N; j++ {
+				sl.Clear()
+				sl.Seed(randSeed1, randSeed2)
+
+				for k := 0; k < i; k++ {
+					sl.Insert(k, k)
+				}
+			}
+			//b.Logf("Levels: %v\n", sl.nLevels+1)
+		})
+	}
+}
+
+func BenchmarkCreationMethods(b *testing.B) {
+	for i := 0; i < 100000; i += 1000 {
+		b.Run(fmt.Sprintf("Creating slice of length %v", i), func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				a := make([]int, i, i)
+				for k := 0; k < len(a); k++ {
+					a[k] = k
+				}
+			}
+		})
+
+		b.Run(fmt.Sprintf("Creating ISkipList of length %v using PushFront", i), func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				var sl ISkipList
+				for k := 0; k < i; k++ {
+					sl.PushFront(k)
+				}
+			}
+		})
+
+		b.Run(fmt.Sprintf("Creating ISkipList of length %v using PushBack", i), func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				var sl ISkipList
+				for k := 0; k < i; k++ {
+					sl.PushBack(k)
+				}
+			}
+		})
+	}
+}
+
+type opKind int
+
+const (
+	opInsert = iota
+	opRemove
+	opSwap
+)
+
+type op struct {
+	kind   opKind
+	index1 int
+	index2 int
+	elem   ElemType
+}
+
+func printOp(op *op) string {
+	switch op.kind {
+	case opInsert:
+		return fmt.Sprintf("Insert %v at index %v\n", op.elem, op.index1)
+	case opRemove:
+		return fmt.Sprintf("Remove element at index %v\n", op.index1)
+	case opSwap:
+		return fmt.Sprintf("Swap element at index %v with element at index %v\n", op.index1, op.index2)
+	default:
+		panic("Unrecognized op")
+	}
+}
+
+func applyToSlice(op *op, a *[]int) {
+	switch op.kind {
+	case opInsert:
+		if len(*a) == 0 && op.index1 == 0 {
+			*a = append(*a, op.elem)
+		} else {
+			last := (*a)[len(*a)-1]
+			for i := len(*a) - 1; i > op.index1; i-- {
+				(*a)[i] = (*a)[i-1]
+			}
+			(*a)[op.index1] = op.elem
+			*a = append(*a, last)
+		}
+	case opRemove:
+		for i := op.index1; i < len(*a)-1; i++ {
+			(*a)[i] = (*a)[i+1]
+		}
+		*a = (*a)[:len(*a)-1]
+	case opSwap:
+		(*a)[op.index1], (*a)[op.index2] = (*a)[op.index2], (*a)[op.index1]
+	}
+}
+
+func applyToISkipList(op *op, sl *ISkipList) {
+	switch op.kind {
+	case opInsert:
+		sl.Insert(op.index1, op.elem)
+	case opRemove:
+		sl.Remove(op.index1)
+	case opSwap:
+		sl.Swap(op.index1, op.index2)
+	}
+}
+
+var randState *pcg32
+
+func genOps(n int) []op {
+	if randState == nil {
+		randState = newPCG32()
+		randState.Seed(randSeed1, randSeed2)
+	}
+
+	ops := make([]op, n)
+	slLen := 0
+	for i := 0; i < n; i++ {
+		r := randState.Random()
+		if slLen == 0 || r < ^uint32(0)/3 {
+			ops[i].kind = opInsert
+			ops[i].elem = int(r)
+			if ops[i].elem != 0 {
+				ops[i].elem %= 100
+			}
+			if slLen == 0 {
+				ops[i].index1 = 0
+			} else {
+				ops[i].index1 = int(r) % slLen
+			}
+			slLen++
+		} else if slLen >= 1 || r < (^uint32(0)/3)*2 {
+			ops[i].kind = opSwap
+			ops[i].index1 = int(r) % slLen
+			ops[i].index2 = int(randState.Random()) % slLen
+		} else {
+			ops[i].kind = opRemove
+			ops[i].index1 = int(r) % slLen
+			slLen--
+		}
+	}
+
+	return ops
+}
