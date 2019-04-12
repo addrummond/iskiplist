@@ -86,7 +86,7 @@ See https://github.com/sean-public/fast-skiplist and the following paper
 that it references:
 https://www.sciencedirect.com/science/article/pii/030439759400296U
 
-Paste the following Python3 code into the repl to generate the table:
+Paste the following Python 3 code into the repl to generate the table:
 
 for _ in range(1): # dummy loop to create a block
     from math import *
