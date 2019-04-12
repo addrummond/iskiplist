@@ -905,10 +905,6 @@ func (l *ISkipList) PushBack(elem ElemType) {
 		copyToCache(l, index-1, prevs, prevIndices)
 	}
 
-	if node == nil {
-		panic("Internal error in 'PushBack'")
-	}
-
 	after := &listNode{
 		elem: elem,
 	}
