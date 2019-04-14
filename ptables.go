@@ -6,7 +6,7 @@ See https://github.com/sean-public/fast-skiplist and the following paper
 that it references:
 https://www.sciencedirect.com/science/article/pii/030439759400296U
 
-The following Python 3 code function can be pasted into the repl. Call
+The following Python 3 function can be pasted into the repl. Call
 table(n, length) to generate a table.
 
 for _ in range(1): # dummy loop to allow pasting into repl in one go
@@ -61,6 +61,7 @@ func nTosses(l *ISkipList) int {
 
 func estimateNLevelsFromLength(l *ISkipList, n int) int {
 	nLevels := 0
+outer:
 	for n > 0 {
 		if n < 8 {
 			for ; n >= 0; n-- {
@@ -80,7 +81,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable8Zoff > nLevels {
 						nLevels = i + pTable8Zoff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -92,7 +93,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable32ZOff > nLevels {
 						nLevels = i + pTable32ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -104,7 +105,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable128ZOff > nLevels {
 						nLevels = i + pTable128ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -116,7 +117,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable512ZOff > nLevels {
 						nLevels = i + pTable512ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -128,7 +129,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable2048ZOff > nLevels {
 						nLevels = i + pTable2048ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -140,7 +141,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable8192ZOff > nLevels {
 						nLevels = i + pTable8192ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -152,7 +153,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable32768ZOff > nLevels {
 						nLevels = i + pTable32768ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -164,7 +165,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable131072ZOff > nLevels {
 						nLevels = i + pTable131072ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -176,7 +177,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable262144ZOff > nLevels {
 						nLevels = i + pTable262144ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -188,7 +189,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable1048576ZOff > nLevels {
 						nLevels = i + pTable1048576ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -200,7 +201,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable4194304ZOff > nLevels {
 						nLevels = i + pTable4194304ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -212,7 +213,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable16777216ZOff > nLevels {
 						nLevels = i + pTable16777216ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -224,7 +225,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable67108864ZOff > nLevels {
 						nLevels = i + pTable67108864ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -236,7 +237,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable268435456ZOff > nLevels {
 						nLevels = i + pTable268435456ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -248,7 +249,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable1073741824ZOff > nLevels {
 						nLevels = i + pTable1073741824ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -260,7 +261,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable4294967296ZOff > nLevels {
 						nLevels = i + pTable4294967296ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -272,7 +273,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable17179869184ZOff > nLevels {
 						nLevels = i + pTable17179869184ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -284,7 +285,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable68719476736ZOff > nLevels {
 						nLevels = i + pTable68719476736ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -296,7 +297,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable274877906944ZOff > nLevels {
 						nLevels = i + pTable274877906944ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -308,7 +309,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable1099511627776ZOff > nLevels {
 						nLevels = i + pTable1099511627776ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels
@@ -320,7 +321,7 @@ func estimateNLevelsFromLength(l *ISkipList, n int) int {
 					if i+pTable4398046511104ZOff > nLevels {
 						nLevels = i + pTable4398046511104ZOff
 					}
-					break
+					continue outer
 				}
 			}
 			nLevels = maxLevels

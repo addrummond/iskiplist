@@ -643,17 +643,28 @@ func (l *ISkipList) Truncate(index int) {
 	if index < 0 || index > l.length {
 		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", index, l))
 	}
-	if index <= l.length {
+	if index >= l.length {
+		return
+	}
+
+	if index == 0 {
+		l.length = 0
+		l.root = nil
+		l.cache = nil
 		return
 	}
 
 	prevs := make([]*listNode, l.nLevels)
 	prevIndices := make([]int, l.nLevels)
-	node := getToWithPrevIndicesTryingCache(l, index, prevs, prevIndices)
+	node := getToWithPrevIndicesTryingCache(l, index-1, prevs, prevIndices)
 
 	node.next = nil
 	for _, p := range prevs {
 		p.next = nil
+	}
+
+	if l.cache != nil && l.cache.index >= index {
+		l.cache = nil
 	}
 
 	l.length = index

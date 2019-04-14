@@ -23,7 +23,6 @@ func TestCopy(t *testing.T) {
 
 func TestInsertAtBeginning(t *testing.T) {
 	var sl ISkipList
-	// 12333
 	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
 	for i := 0; i < 10; i++ {
 		fmt.Printf("%v\n", debugPrintISkipList(&sl, 3))
@@ -32,6 +31,56 @@ func TestInsertAtBeginning(t *testing.T) {
 	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
 	if sl.nLevels+1 != 3 {
 		t.Errorf("Unexpected number of levels in result (expected 3, got %v)\n", sl.nLevels+1)
+	}
+}
+
+func TestTruncate(t *testing.T) {
+	const l = 100000
+	const tl1 = 10000
+	const tl2 = 1000
+	const tl3 = 100
+	const tl4 = 32
+	const tl5 = 2
+	var sl ISkipList
+	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
+	for i := 0; i < l; i++ {
+		sl.PushFront(0)
+	}
+	err := false
+	t.Logf("Number of levels with %v elems: %v\n", l, sl.nLevels+1)
+	if sl.nLevels != 10 {
+		err = true
+	}
+	sl.Truncate(tl1)
+	t.Logf("Number of levels with %v elems: %v\n", tl1, sl.nLevels+1)
+	if sl.nLevels != 9 {
+		err = true
+	}
+	sl.Truncate(tl2)
+	t.Logf("Number of levels with %v elems: %v\n", tl2, sl.nLevels+1)
+	if sl.nLevels != 7 {
+		err = true
+	}
+	sl.Truncate(tl3)
+	t.Logf("Number of levels with %v elems: %v\n", tl3, sl.nLevels+1)
+	if sl.nLevels != 5 {
+		err = true
+	}
+	sl.Truncate(tl4)
+	t.Logf("Number of levels with %v elems: %v\n", tl4, sl.nLevels+1)
+	if sl.nLevels != 5 {
+		err = true
+	}
+	sl.Truncate(tl5)
+	t.Logf("Number of levels with %v elems: %v\n", tl5, sl.nLevels+1)
+	if sl.nLevels != 0 {
+		err = true
+	}
+
+	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+
+	if err {
+		t.Errorf("Unexpected number of levels.")
 	}
 }
 
