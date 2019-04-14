@@ -79,51 +79,6 @@ const maxLevels = 30
 // indices.
 const minIndexToCache = 8
 
-/*
-The optimal value of p for a general purpose skiplist is is approximately 1/e.
-See https://github.com/sean-public/fast-skiplist and the following paper
-that it references:
-https://www.sciencedirect.com/science/article/pii/030439759400296U
-
-Paste the following Python 3 code into the repl to generate the table:
-
-for _ in range(1): # dummy loop to create a block
-    from math import *
-    tot = 0
-    for i in range(21):
-        ip = round(pow(1/e, i) * (1 - 1/e) * (1 << 32))
-        print(str(tot + ip) + ",")
-        tot += ip
-
-We can simulate up to 21 "coin tosses" (where heads has probability 1/e) using
-a single unsigned 32-bit random number and a lookup table. If the random number
-is >= the last value in the table, then a second random number has to be
-generated.
-*/
-var pTable = [...]uint32{
-	2714937127,
-	3713706680,
-	4081133465,
-	4216302225,
-	4266028033,
-	4284321135,
-	4291050791,
-	4293526493,
-	4294437253,
-	4294772303,
-	4294895561,
-	4294940905,
-	4294957586,
-	4294963723,
-	4294965981,
-	4294966812,
-	4294967118,
-	4294967230,
-	4294967271,
-	4294967286,
-	4294967292,
-}
-
 func fastSeed(l *ISkipList) {
 	l.rand = *newPCG32()
 
@@ -147,33 +102,6 @@ func fastSeed(l *ISkipList) {
 		seed2 = ((s >> 4) & 7) | (((s >> 12) & 7) << 4) | (((s >> 20) & 7) << 8) | (((s >> 28) & 7) << 12) | (((s >> 36) & 7) << 16) | (((s >> 44) & 7) << 20) | (((s >> 52) & 7) << 24)
 	}
 	l.Seed(seed1, seed2)
-}
-
-func nTosses(l *ISkipList) int {
-	// The PCG state has to be odd, so we know that it's uninitialized if the
-	// state is zero.
-	if l.rand.state == 0 {
-		fastSeed(l)
-	}
-
-	// Note that a binary search isn't the way to go here, since the value is
-	// far more likely to be < one of the first few elements of pTable. A linear
-	// search probably isn't quite the probabilistically optimal algorithm, but
-	// it's simple and close enough.
-
-	r := l.rand.Random()
-	for i := 0; i < len(pTable); i++ {
-		if r < pTable[i] {
-			return int(i)
-		}
-	}
-	r = l.rand.Random()
-	for i := 0; i+len(pTable) < maxLevels; i++ {
-		if r < pTable[i] {
-			return i + len(pTable)
-		}
-	}
-	return maxLevels
 }
 
 // ElemType is the type of an element in the skip list.
@@ -353,17 +281,7 @@ func copyToCache(l *ISkipList, index int, prevs []*listNode, prevIndices []int) 
 	copy(l.cache.prevIndices, prevIndices)
 }
 
-func retrieve(l *ISkipList, i int) *listNode {
-	if i < minIndexToCache {
-		return getTo(l.root, i)
-	}
-
-	// Some of the copying in subsequent code is in the service of ensuring
-	// that these values are stack allocated. (We don't want to heap allocate
-	// two arrays every time the list is indexed!)
-	prevs := make([]*listNode, l.nLevels)
-	prevIndices := make([]int, l.nLevels)
-
+func getToWithPrevIndicesTryingCache(l *ISkipList, i int, prevs []*listNode, prevIndices []int) *listNode {
 	var node *listNode
 	if l.cache != nil && l.cache.isValid() && l.cache.index <= i {
 		p := l.root
@@ -380,7 +298,21 @@ func retrieve(l *ISkipList, i int) *listNode {
 	} else {
 		node = getToWithPrevIndices(l.root, i, prevs, prevIndices)
 	}
+	return node
+}
 
+func retrieve(l *ISkipList, i int) *listNode {
+	if i < minIndexToCache {
+		return getTo(l.root, i)
+	}
+
+	// Some of the copying in subsequent code is in the service of ensuring
+	// that these values are stack allocated. (We don't want to heap allocate
+	// two arrays every time the list is indexed!)
+	prevs := make([]*listNode, l.nLevels)
+	prevIndices := make([]int, l.nLevels)
+
+	node := getToWithPrevIndicesTryingCache(l, i, prevs, prevIndices)
 	copyToCache(l, i, prevs, prevIndices)
 
 	return node
@@ -442,7 +374,8 @@ func (l *ISkipList) Copy() *ISkipList {
 // this is a no-op.
 func (l *ISkipList) CopyRange(from, to int) *ISkipList {
 	// TODO: This should be replaced with a specialized implementation, as for
-	// Copy above.
+	// Copy above. This specialized implementation should handle level removal
+	// in a similar way to Truncate().
 
 	var nw ISkipList
 	for i := to - 1; i >= from; i-- {
@@ -704,6 +637,33 @@ func (l *ISkipList) Remove(index int) ElemType {
 	return node.elem
 }
 
+// Truncate removes all elements from the element at index onwards. If index is
+// >= 0 and <= the length of the ISkipList, this is a no-op.
+func (l *ISkipList) Truncate(index int) {
+	if index < 0 || index > l.length {
+		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", index, l))
+	}
+	if index <= l.length {
+		return
+	}
+
+	prevs := make([]*listNode, l.nLevels)
+	prevIndices := make([]int, l.nLevels)
+	node := getToWithPrevIndicesTryingCache(l, index, prevs, prevIndices)
+
+	node.next = nil
+	for _, p := range prevs {
+		p.next = nil
+	}
+
+	l.length = index
+
+	newNLevels := estimateNLevelsFromLength(l, index)
+	if newNLevels < int(l.nLevels) {
+		shrink(l, int(l.nLevels)-newNLevels)
+	}
+}
+
 func singleton(elem ElemType) *listNode {
 	return &listNode{
 		elem: elem,
@@ -771,27 +731,22 @@ func addSparserLevel(l *ISkipList, prevAtLevel, node *listNode, level, index int
 	return &clone
 }
 
-// Whenever we remove an element from the list, we remove a level from the list
-// with a certain probability.
-func shrinkBy(l *ISkipList) int32 {
+func shrink(l *ISkipList, levels int) {
+	for i := 0; i < levels; i++ {
+		l.root = l.root.nextLevel
+	}
+	l.nLevels -= int32(levels)
+}
+
+func maybeShrink(l *ISkipList) {
 	levs := int32(nTosses(l))
 
 	levelsToRemove := levs - l.nLevels + 1
 	if levelsToRemove < 0 {
-		return 0
-	}
-	return levelsToRemove
-}
-
-func maybeShrink(l *ISkipList) {
-	levelsToRemove := shrinkBy(l)
-
-	var i int32
-	for i = 0; i < levelsToRemove; i++ {
-		l.root = l.root.nextLevel
+		levelsToRemove = 0
 	}
 
-	l.nLevels -= levelsToRemove
+	shrink(l, int(levelsToRemove))
 }
 
 func insertAtBeginning(l *ISkipList, elem ElemType) {
