@@ -807,6 +807,7 @@ func insertAtBeginning(l *ISkipList, elem ElemType) {
 // PushFront adds an element to the beginning of the ISkipList. PushFront runs
 // in constant time.
 func (l *ISkipList) PushFront(elem ElemType) {
+	l.length++
 	insertAtBeginning(l, elem)
 }
 
