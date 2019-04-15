@@ -449,7 +449,7 @@ func (l *ISkipList) CopyRangeToSlice(from, to int, slice []ElemType) {
 	}
 }
 
-// CopyToSlice is a shorthand for l.CopyRangeToSlice(0, l.Length())
+// CopyToSlice(slice) is a shorthand for l.CopyRangeToSlice(0, l.Length(), slice)
 func (l *ISkipList) CopyToSlice(slice []ElemType) {
 	l.CopyRangeToSlice(0, l.length, slice)
 }
@@ -519,12 +519,12 @@ func (l *ISkipList) IterateRangeI(from, to int, f func(int, *ElemType) bool) {
 	}
 }
 
-// Iterate is a shorthand for l.IterateRange(0, l.Length(), f)
+// Iterate(f) is a shorthand for l.IterateRange(0, l.Length(), f)
 func (l *ISkipList) Iterate(f func(*ElemType) bool) {
 	l.IterateRange(0, l.length, f)
 }
 
-// IterateI is a shorthand for l.IterateRangeI(0, l.Length(), f)
+// IterateI(f) is a shorthand for l.IterateRangeI(0, l.Length(), f)
 func (l *ISkipList) IterateI(f func(int, *ElemType) bool) {
 	l.IterateRangeI(0, l.length, f)
 }
@@ -555,12 +555,12 @@ func (l *ISkipList) ForAllRangeI(from, to int, f func(int, *ElemType)) {
 	})
 }
 
-// ForAll is a shorthand for l.ForAllRange(0, l.Length(), f)
+// ForAll(f) is a shorthand for l.ForAllRange(0, l.Length(), f)
 func (l *ISkipList) ForAll(f func(*ElemType)) {
 	l.ForAllRange(0, l.length, f)
 }
 
-// ForAllI is a shorthand for l.ForAllI(0, l.Length(), f)
+// ForAllI(f) is a shorthand for l.ForAllI(0, l.Length(), f)
 func (l *ISkipList) ForAllI(f func(int, *ElemType)) {
 	l.ForAllRangeI(0, l.length, f)
 }
