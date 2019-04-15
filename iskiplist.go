@@ -637,17 +637,17 @@ func (l *ISkipList) Remove(index int) ElemType {
 	return node.elem
 }
 
-// Truncate removes all elements from the element at index onwards. If index is
-// >= 0 and <= the length of the ISkipList, this is a no-op.
-func (l *ISkipList) Truncate(index int) {
-	if index < 0 || index > l.length {
-		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", index, l))
+// Truncate reduces the length of the skiplist to n, keeping the first n
+// elements. If n is equal to the length of the ISkipList, this is a no-op.
+func (l *ISkipList) Truncate(n int) {
+	if n < 0 || n > l.length {
+		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", n, l))
 	}
-	if index >= l.length {
+	if n >= l.length {
 		return
 	}
 
-	if index == 0 {
+	if n == 0 {
 		l.length = 0
 		l.root = nil
 		l.cache = nil
@@ -656,20 +656,20 @@ func (l *ISkipList) Truncate(index int) {
 
 	prevs := make([]*listNode, l.nLevels)
 	prevIndices := make([]int, l.nLevels)
-	node := getToWithPrevIndicesTryingCache(l, index-1, prevs, prevIndices)
+	node := getToWithPrevIndicesTryingCache(l, n-1, prevs, prevIndices)
 
 	node.next = nil
 	for _, p := range prevs {
 		p.next = nil
 	}
 
-	if l.cache != nil && l.cache.index >= index {
+	if l.cache != nil && l.cache.index >= n {
 		l.cache = nil
 	}
 
-	l.length = index
+	l.length = n
 
-	newNLevels := estimateNLevelsFromLength(l, index)
+	newNLevels := estimateNLevelsFromLength(l, n)
 	if newNLevels < int(l.nLevels) {
 		shrink(l, int(l.nLevels)-newNLevels)
 	}
