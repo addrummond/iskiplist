@@ -639,6 +639,7 @@ func (l *ISkipList) Remove(index int) ElemType {
 
 // Truncate reduces the length of the ISkipList to n, keeping the first n
 // elements. If n is equal to the length of the ISkipList, this is a no-op.
+// If n is zero, this is equivalent to Clear().
 func (l *ISkipList) Truncate(n int) {
 	if n < 0 || n > l.length {
 		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", n, l))
@@ -648,9 +649,7 @@ func (l *ISkipList) Truncate(n int) {
 	}
 
 	if n == 0 {
-		l.length = 0
-		l.root = nil
-		l.cache = nil
+		l.Clear()
 		return
 	}
 
