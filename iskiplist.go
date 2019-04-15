@@ -908,7 +908,7 @@ func (l *ISkipList) PopBack() (r ElemType, ok bool) {
 // Insert inserts an element after the element at the specified index, or at
 // the end of the list if the index is equal to the length of the ISkipList.
 func (l *ISkipList) Insert(index int, elem ElemType) {
-	if index > l.length {
+	if index < 0 || index > l.length {
 		panic("Index out of range in call to 'Insert'")
 	}
 
