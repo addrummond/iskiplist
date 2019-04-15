@@ -104,7 +104,7 @@ func fastSeed(l *ISkipList) {
 	l.Seed(seed1, seed2)
 }
 
-// ElemType is the type of an element in the skip list.
+// ElemType is the type of an element of an ISkipList.
 type ElemType = int
 
 // ^^ ElemType can be any type that can be converted to and from an int without
