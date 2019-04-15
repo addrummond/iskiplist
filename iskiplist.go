@@ -637,7 +637,7 @@ func (l *ISkipList) Remove(index int) ElemType {
 	return node.elem
 }
 
-// Truncate reduces the length of the skiplist to n, keeping the first n
+// Truncate reduces the length of the ISkipList to n, keeping the first n
 // elements. If n is equal to the length of the ISkipList, this is a no-op.
 func (l *ISkipList) Truncate(n int) {
 	if n < 0 || n > l.length {
