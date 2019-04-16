@@ -1,6 +1,8 @@
 package bufferediskiplist
 
 import (
+	"fmt"
+
 	"github.com/addrummond/iskiplist"
 	"github.com/addrummond/iskiplist/sliceutils"
 )
@@ -70,6 +72,34 @@ func (l *BufferedISkipList) PushBack(elem iskiplist.ElemType) {
 func (l *BufferedISkipList) PushFront(elem iskiplist.ElemType) {
 	checkStartSliceGrowth(l)
 	l.start = append(l.start, elem)
+}
+
+func (l *BufferedISkipList) At(i int) iskiplist.ElemType {
+	if i < 0 || i >= l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", i, l))
+	}
+
+	if i < len(l.start) {
+		return l.start[len(l.start)-i-1]
+	}
+	if i < len(l.start)+l.iskiplist.Length() {
+		return l.iskiplist.At(i - len(l.start))
+	}
+	return l.end[i-len(l.start)-l.iskiplist.Length()]
+}
+
+func (l *BufferedISkipList) PtrAt(i int) *iskiplist.ElemType {
+	if i < 0 || i >= l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", i, l))
+	}
+
+	if i < len(l.start) {
+		return &l.start[len(l.start)-i-1]
+	}
+	if i < len(l.start)+l.iskiplist.Length() {
+		return l.iskiplist.PtrAt(i - len(l.start))
+	}
+	return &l.end[i-len(l.start)-l.iskiplist.Length()]
 }
 
 func (l *BufferedISkipList) Swap(index1, index2 int) {
@@ -175,4 +205,82 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	}
 	l.iskiplist.PushBack(elem)
 	l.end = l.end[index-len(l.start)-l.iskiplist.Length():]
+}
+
+func (l *BufferedISkipList) IterateRange(from, to int, f func(*iskiplist.ElemType) bool) {
+	if from < 0 || from >= l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", from, l))
+	}
+	if to < 0 || to > l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", to, l))
+	}
+
+	// Returning early for this case saves the cost of finding the 'from' node.
+	if to <= from {
+		return
+	}
+
+	for i, j := 0, len(l.start)-1; i < len(l.start); i, j = i+1, j-1 {
+		if !f(&l.start[j]) {
+			return
+		}
+	}
+
+	broke := false
+	l.iskiplist.IterateRange(from-len(l.start), to-len(l.start), func(elem *iskiplist.ElemType) bool {
+		if !f(elem) {
+			broke = true
+			return false
+		} else {
+			return true
+		}
+	})
+	if broke {
+		return
+	}
+
+	for i, j := len(l.start)+l.iskiplist.Length(), 0; j < len(l.end); i, j = i+1, j+1 {
+		if !f(&l.end[j]) {
+			break
+		}
+	}
+}
+
+func (l *BufferedISkipList) IterateRangeI(from, to int, f func(int, *iskiplist.ElemType) bool) {
+	if from < 0 || from >= l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", from, l))
+	}
+	if to < 0 || to > l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", to, l))
+	}
+
+	// Returning early for this case saves the cost of finding the 'from' node.
+	if to <= from {
+		return
+	}
+
+	for i, j := 0, len(l.start)-1; i < len(l.start); i, j = i+1, j-1 {
+		if !f(i, &l.start[j]) {
+			return
+		}
+	}
+
+	broke := false
+	l.iskiplist.IterateRangeI(from-len(l.start), to-len(l.start), func(index int, elem *iskiplist.ElemType) bool {
+		if !f(index-len(l.start), elem) {
+			broke = true
+			return false
+		} else {
+			return true
+		}
+	})
+	if broke {
+		return
+	}
+
+	for i, j := len(l.start)+l.iskiplist.Length(), 0; j < len(l.end); i, j = i+1, j+1 {
+		if !f(i, &l.end[j]) {
+			break
+		}
+	}
 }
