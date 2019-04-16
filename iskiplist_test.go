@@ -3,6 +3,8 @@ package iskiplist
 import (
 	"fmt"
 	"testing"
+
+	"github.com/addrummond/iskiplist/sliceutils"
 )
 
 const (
@@ -221,9 +223,9 @@ func TestRandomOpSequences(t *testing.T) {
 		a := make([]int, 0)
 		for _, o := range ops {
 			t.Logf("%v\n", debugPrintISkipList(&sl, 3))
-			t.Logf("%s\n", printOp(&o))
-			applyToSlice(&o, &a)
-			applyToISkipList(&o, &sl)
+			t.Logf("%s\n", sliceutils.PrintOp(&o))
+			sliceutils.ApplyOpToSlice(&o, &a)
+			applyOpToISkipList(&o, &sl)
 		}
 
 		t.Logf("Reported lengths: %v %v\n", sl.Length(), len(a))
@@ -262,15 +264,15 @@ func TestRandomOpSequences(t *testing.T) {
 	}
 }
 
-func benchmarkRandomOpSequenceWithISKipList(ops []op, sl *ISkipList, l int) {
+func benchmarkRandomOpSequenceWithISKipList(ops []sliceutils.Op, sl *ISkipList, l int) {
 	for _, o := range ops {
-		applyToISkipList(&o, sl)
+		applyOpToISkipList(&o, sl)
 	}
 }
 
-func benchmarkRandomOpSequenceWithSlice(ops []op, a []int, l int) {
+func benchmarkRandomOpSequenceWithSlice(ops []sliceutils.Op, a []int, l int) {
 	for _, o := range ops {
-		applyToSlice(&o, &a)
+		sliceutils.ApplyOpToSlice(&o, &a)
 	}
 }
 
@@ -369,99 +371,48 @@ func BenchmarkCreationMethods(b *testing.B) {
 	}
 }
 
-type opKind int
-
-const (
-	opInsert = iota
-	opRemove
-	opSwap
-)
-
-type op struct {
-	kind   opKind
-	index1 int
-	index2 int
-	elem   ElemType
-}
-
-func printOp(op *op) string {
-	switch op.kind {
-	case opInsert:
-		return fmt.Sprintf("Insert %v at index %v\n", op.elem, op.index1)
-	case opRemove:
-		return fmt.Sprintf("Remove element at index %v\n", op.index1)
-	case opSwap:
-		return fmt.Sprintf("Swap element at index %v with element at index %v\n", op.index1, op.index2)
-	default:
-		panic("Unrecognized op")
-	}
-}
-
-func applyToSlice(op *op, a *[]int) {
-	switch op.kind {
-	case opInsert:
-		if len(*a) == 0 && op.index1 == 0 {
-			*a = append(*a, op.elem)
-		} else {
-			last := (*a)[len(*a)-1]
-			for i := len(*a) - 1; i > op.index1; i-- {
-				(*a)[i] = (*a)[i-1]
-			}
-			(*a)[op.index1] = op.elem
-			*a = append(*a, last)
-		}
-	case opRemove:
-		for i := op.index1; i < len(*a)-1; i++ {
-			(*a)[i] = (*a)[i+1]
-		}
-		*a = (*a)[:len(*a)-1]
-	case opSwap:
-		(*a)[op.index1], (*a)[op.index2] = (*a)[op.index2], (*a)[op.index1]
-	}
-}
-
-func applyToISkipList(op *op, sl *ISkipList) {
-	switch op.kind {
-	case opInsert:
-		sl.Insert(op.index1, op.elem)
-	case opRemove:
-		sl.Remove(op.index1)
-	case opSwap:
-		sl.Swap(op.index1, op.index2)
+func applyOpToISkipList(op *sliceutils.Op, sl *ISkipList) {
+	switch op.Kind {
+	case sliceutils.OpInsert:
+		sl.Insert(op.Index1, op.Elem)
+	case sliceutils.OpRemove:
+		sl.Remove(op.Index1)
+	case sliceutils.OpSwap:
+		sl.Swap(op.Index1, op.Index2)
 	}
 }
 
 var randState *pcg32
 
-func genOps(n int) []op {
+func genOps(n int) []sliceutils.Op {
 	if randState == nil {
 		randState = newPCG32()
 		randState.Seed(randSeed1, randSeed2)
 	}
 
-	ops := make([]op, n)
+	ops := make([]sliceutils.Op, n)
 	slLen := 0
 	for i := 0; i < n; i++ {
 		r := randState.Random()
 		if slLen == 0 || r < ^uint32(0)/3 {
-			ops[i].kind = opInsert
-			ops[i].elem = int(r)
-			if ops[i].elem != 0 {
-				ops[i].elem %= 100
+			ops[i].Kind = sliceutils.OpInsert
+			ops[i].Elem = int(r)
+			if ops[i].Elem != 0 {
+				ops[i].Elem %= 100
 			}
 			if slLen == 0 {
-				ops[i].index1 = 0
+				ops[i].Index1 = 0
 			} else {
-				ops[i].index1 = int(r) % slLen
+				ops[i].Index1 = int(r) % slLen
 			}
 			slLen++
 		} else if slLen >= 1 || r < (^uint32(0)/3)*2 {
-			ops[i].kind = opSwap
-			ops[i].index1 = int(r) % slLen
-			ops[i].index2 = int(randState.Random()) % slLen
+			ops[i].Kind = sliceutils.OpSwap
+			ops[i].Index1 = int(r) % slLen
+			ops[i].Index2 = int(randState.Random()) % slLen
 		} else {
-			ops[i].kind = opRemove
-			ops[i].index1 = int(r) % slLen
+			ops[i].Kind = sliceutils.OpRemove
+			ops[i].Index1 = int(r) % slLen
 			slLen--
 		}
 	}

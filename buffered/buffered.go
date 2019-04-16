@@ -1,29 +1,34 @@
-package iskiplist
+package bufferediskiplist
+
+import (
+	"github.com/addrummond/iskiplist"
+	"github.com/addrummond/iskiplist/sliceutils"
+)
 
 type BufferedISkipList struct {
-	start     []ElemType // reverse order
-	iskiplist ISkipList
-	end       []ElemType
+	start     []iskiplist.ElemType // reverse order
+	iskiplist iskiplist.ISkipList
+	end       []iskiplist.ElemType
 }
 
 // If a slice is no longer than this, then we perform all operations directly on
 // the slice when possible.
 const noHoldsBarredMaxLength = 64
 
-// We don't let either 'start' or 'end' grow longer than this. The reason for
-// this is to prevent counterintuitive performance characteristics. For example,
+// We don't let either 'start' or 'end' grow longer than maxSliceLength.
+// This is to prevent counterintuitive performance characteristics. For example,
 // imagine that a BufferedISkipList of one million elements is constructed by
 // repeated use of PushBack, and that all of these elements are appended to the
 // 'end' slice. A value is now inserted in the middle of the list. One would
 // expect this to be a fast O(log n) operation. But in fact, the first half of
-// the 'end' slice, containing half a million elements, will have to be pushed
-// onto the ISkipList. We can avoid this kind of situation by not letting
+// the 'end' slice, containing half a million elements, will first have to be
+// pushed onto the ISkipList. We can avoid this kind of situation by not letting
 // 'start' or 'end' grow too big.
 const maxSliceLength = 128
 
 func checkStartSliceGrowth(l *BufferedISkipList) {
 	if len(l.start) >= maxSliceLength {
-		for _, v := range l.start {
+		for _, v := range l.start { // remember that 'start' is reversed
 			l.iskiplist.PushFront(v)
 		}
 		l.start = nil
@@ -43,38 +48,14 @@ func (l *BufferedISkipList) Length() int {
 	return len(l.start) + l.iskiplist.Length() + len(l.end)
 }
 
-func (l *BufferedISkipList) PushBack(elem ElemType) {
+func (l *BufferedISkipList) PushBack(elem iskiplist.ElemType) {
 	checkEndSliceGrowth(l)
 	l.end = append(l.end, elem)
 }
 
-func (l *BufferedISkipList) PushFront(elem ElemType) {
+func (l *BufferedISkipList) PushFront(elem iskiplist.ElemType) {
 	checkStartSliceGrowth(l)
 	l.start = append(l.start, elem)
-}
-
-func sliceInsert(a *[]int, index int, elem ElemType) {
-	if len(*a) == 0 && index == 0 {
-		*a = append(*a, elem)
-	} else {
-		last := (*a)[len(*a)-1]
-		for i := len(*a) - 1; i > index; i-- {
-			(*a)[i] = (*a)[i-1]
-		}
-		(*a)[index] = elem
-		*a = append(*a, last)
-	}
-}
-
-func sliceRemove(a *[]int, index int) {
-	for i := index; i < len(*a)-1; i++ {
-		(*a)[i] = (*a)[i+1]
-	}
-	*a = (*a)[:len(*a)-1]
-}
-
-func sliceSwap(a *[]int, index1, index2 int) {
-	(*a)[index1], (*a)[index2] = (*a)[index2], (*a)[index1]
 }
 
 func (l *BufferedISkipList) Swap(index1, index2 int) {
@@ -84,7 +65,7 @@ func (l *BufferedISkipList) Swap(index1, index2 int) {
 		return
 	}
 
-	var val1, val2 *ElemType
+	var val1, val2 *iskiplist.ElemType
 	if index1 < len(l.start) {
 		val1 = &l.start[len(l.start)-index1-1]
 	} else if index1 < upToEnd {
@@ -109,7 +90,7 @@ func (l *BufferedISkipList) Remove(index int) {
 	}
 
 	if index < len(l.start) {
-		sliceRemove(&l.start, len(l.start)-index-1)
+		sliceutils.SliceRemove(&l.start, len(l.start)-index-1)
 		return
 	}
 
@@ -118,10 +99,10 @@ func (l *BufferedISkipList) Remove(index int) {
 		return
 	}
 
-	sliceRemove(&l.end, index-len(l.start)-l.iskiplist.Length())
+	sliceutils.SliceRemove(&l.end, index-len(l.start)-l.iskiplist.Length())
 }
 
-func (l *BufferedISkipList) Insert(index int, elem ElemType) {
+func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	length := l.Length()
 	if index < 0 || index > length {
 		panic("Index out of range in call to 'Insert'")
@@ -144,14 +125,13 @@ func (l *BufferedISkipList) Insert(index int, elem ElemType) {
 
 	// insertion within 'start' where 'start' is small
 	if index < len(l.start) && len(l.start) <= noHoldsBarredMaxLength {
-		// TODO TOOD logic is wrong here because 'start' is reversed
-		sliceInsert(&l.start, len(l.start)-index-1-1, elem)
+		sliceutils.SliceInsert(&l.start, len(l.start)-index, elem)
 		return
 	}
 
 	// insertion within 'end' where 'end' is small
 	if index >= len(l.start)+l.iskiplist.Length() && len(l.end) <= noHoldsBarredMaxLength {
-		sliceInsert(&l.start, index-len(l.start)-l.iskiplist.Length(), elem)
+		sliceutils.SliceInsert(&l.start, index-len(l.start)-l.iskiplist.Length(), elem)
 		return
 	}
 
