@@ -52,7 +52,7 @@ func ApplyOpToSlice(op *Op, a *[]elemType) {
 	case OpRemove:
 		SliceRemove(a, op.Index1)
 	case OpSwap:
-		SliceSwap(a, op.Index1, op.Index1)
+		SliceSwap(a, op.Index1, op.Index2)
 	}
 }
 
