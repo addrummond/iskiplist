@@ -275,17 +275,23 @@ func (l *BufferedISkipList) IterateRangeI(from, to int, f func(int, *iskiplist.E
 		}
 	}
 
-	broke := false
-	l.iskiplist.IterateRangeI(from-len(l.start), to-len(l.start), func(index int, elem *iskiplist.ElemType) bool {
-		if !f(index-len(l.start), elem) {
-			broke = true
-			return false
-		} else {
-			return true
+	if from >= len(l.start) {
+		t := to
+		if t >= len(l.start)+l.iskiplist.Length() {
+			t = l.iskiplist.Length()
 		}
-	})
-	if broke {
-		return
+		broke := false
+		l.iskiplist.IterateRangeI(from-len(l.start), t, func(index int, elem *iskiplist.ElemType) bool {
+			if !f(index-len(l.start), elem) {
+				broke = true
+				return false
+			} else {
+				return true
+			}
+		})
+		if broke {
+			return
+		}
 	}
 
 	for i, j := len(l.start)+l.iskiplist.Length(), 0; j < len(l.end); i, j = i+1, j+1 {
