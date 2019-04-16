@@ -905,7 +905,7 @@ func (l *ISkipList) PopBack() (r ElemType, ok bool) {
 	return
 }
 
-// Insert inserts an element after the element at the specified index, or at
+// Insert inserts an element before the element at the specified index, at
 // the end of the list if the index is equal to the length of the ISkipList.
 func (l *ISkipList) Insert(index int, elem ElemType) {
 	if index < 0 || index > l.length {
