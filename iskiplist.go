@@ -1071,7 +1071,10 @@ func debugPrintList(node *listNode, pointerDigits int) string {
 	return s.String()
 }
 
-func debugPrintISkipList(l *ISkipList, pointerDigits int) string {
+// DebugPrintISkipList returns a string representation of an ISkipList that is
+// useful for debugging. There is no guarantee that this output will remain
+// consistent between versions of this package.
+func DebugPrintISkipList(l *ISkipList, pointerDigits int) string {
 	var s strings.Builder
 
 	s.WriteString("ISkipList:\n")

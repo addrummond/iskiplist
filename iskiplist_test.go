@@ -19,18 +19,18 @@ func TestCopy(t *testing.T) {
 		sl.PushBack(i)
 	}
 	sl2 := sl.Copy()
-	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
-	t.Logf("%v\n", debugPrintISkipList(sl2, 3))
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", DebugPrintISkipList(sl2, 3))
 }
 
 func TestInsertAtBeginning(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
 	for i := 0; i < 10; i++ {
-		t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 		sl.Insert(0, i)
 	}
-	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 	if sl.nLevels+1 != 3 {
 		t.Errorf("Unexpected number of levels in result (expected 3, got %v)\n", sl.nLevels+1)
 	}
@@ -79,7 +79,7 @@ func TestTruncate(t *testing.T) {
 		err = true
 	}
 
-	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 
 	if err {
 		t.Errorf("Unexpected number of levels.")
@@ -181,21 +181,21 @@ func TestInsertAndSwap(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		t.Logf("Inserting %v\n", i)
 		sl.Insert(i, i)
-		t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+		t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 	}
 	for i := 0; i < 2; i++ {
 		t.Logf("Inserting 99\n")
 		sl.Insert(2, 99)
-		t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+		t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 	}
 	for i := 0; i < 2; i++ {
 		t.Logf("Inserting 88\n")
 		sl.Insert(4, 88)
-		t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+		t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 	}
 
 	sl.Swap(4, 8)
-	t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+	t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 
 	if sl.Length() != len(expected) {
 		t.Errorf("Expected length %v, actual length %v\n", len(expected), sl.Length())
@@ -222,7 +222,7 @@ func TestRandomOpSequences(t *testing.T) {
 		sl.Clear()
 		a := make([]int, 0)
 		for _, o := range ops {
-			t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+			t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 			t.Logf("%s\n", sliceutils.PrintOp(&o))
 			sliceutils.ApplyOpToSlice(&o, &a)
 			applyOpToISkipList(&o, &sl)
