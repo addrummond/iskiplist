@@ -48,6 +48,20 @@ func (l *BufferedISkipList) Length() int {
 	return len(l.start) + l.iskiplist.Length() + len(l.end)
 }
 
+func (l *BufferedISkipList) Seed(seed1, seed2 uint64) {
+	l.iskiplist.Seed(seed1, seed2)
+}
+
+func (l *BufferedISkipList) SeedFrom(l2 *BufferedISkipList) {
+	l.iskiplist.SeedFrom(&l2.iskiplist)
+}
+
+func (l *BufferedISkipList) Clear() {
+	l.start = nil
+	l.end = nil
+	l.iskiplist.Clear()
+}
+
 func (l *BufferedISkipList) PushBack(elem iskiplist.ElemType) {
 	checkEndSliceGrowth(l)
 	l.end = append(l.end, elem)

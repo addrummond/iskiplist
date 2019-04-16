@@ -1,8 +1,12 @@
-// sliceutils is an internal package providing various utility functions, some
-// of which are used only in tests.
+// Package sliceutils is an internal package providing various utility
+// functions, some of which are used only in tests.
 package sliceutils
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/addrummond/iskiplist/pcg"
+)
 
 type elemType = int
 
@@ -67,4 +71,47 @@ func PrintOp(op *Op) string {
 	default:
 		panic("Unrecognized op")
 	}
+}
+
+const (
+	randSeed1 = 12345
+	randSeed2 = 67891
+)
+
+var randState *pcg.Pcg32
+
+func GenOps(n int) []Op {
+	if randState == nil {
+		randState = pcg.NewPCG32()
+		randState.Seed(randSeed1, randSeed2)
+	}
+
+	ops := make([]Op, n)
+	slLen := 0
+	for i := 0; i < n; i++ {
+		r := randState.Random()
+		if slLen == 0 || r < ^uint32(0)/3 {
+			ops[i].Kind = OpInsert
+			ops[i].Elem = int(r)
+			if ops[i].Elem != 0 {
+				ops[i].Elem %= 100
+			}
+			if slLen == 0 {
+				ops[i].Index1 = 0
+			} else {
+				ops[i].Index1 = int(r) % slLen
+			}
+			slLen++
+		} else if slLen >= 1 || r < (^uint32(0)/3)*2 {
+			ops[i].Kind = OpSwap
+			ops[i].Index1 = int(r) % slLen
+			ops[i].Index2 = int(randState.Random()) % slLen
+		} else {
+			ops[i].Kind = OpRemove
+			ops[i].Index1 = int(r) % slLen
+			slLen--
+		}
+	}
+
+	return ops
 }

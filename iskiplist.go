@@ -62,6 +62,8 @@ import (
 	// actually unsafe (so long as conversion isn't performed in the other
 	// direction!)
 	"unsafe"
+
+	"github.com/addrummond/iskiplist/pcg"
 )
 
 // This is approximately (1/e)*UINT32_MAX. According to the following article,
@@ -80,7 +82,7 @@ const maxLevels = 30
 const minIndexToCache = 8
 
 func fastSeed(l *ISkipList) {
-	l.rand = *newPCG32()
+	l.rand = *pcg.NewPCG32()
 
 	// Use the address of the ISkipList to seed the RNG. This is not ideal,
 	// but it's cheap. For any given execution of any given program,
@@ -151,7 +153,7 @@ type ISkipList struct {
 	length  int
 	nLevels int32 // number of levels - 1; int32 is more than enough for this, saves a bit of space on archs that allow 4-byte align
 	root    *listNode
-	rand    pcg32
+	rand    pcg.Pcg32
 	cache   *indexCache
 }
 

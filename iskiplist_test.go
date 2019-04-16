@@ -27,7 +27,7 @@ func TestInsertAtBeginning(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
 	for i := 0; i < 10; i++ {
-		fmt.Printf("%v\n", debugPrintISkipList(&sl, 3))
+		t.Logf("%v\n", debugPrintISkipList(&sl, 3))
 		sl.Insert(0, i)
 	}
 	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
@@ -218,7 +218,7 @@ func TestRandomOpSequences(t *testing.T) {
 	sl.Seed(randSeed1, randSeed2)
 	for i := 1; i < 100; i++ {
 		t.Logf("----- Generating random sequence of %v operations -----\n", i)
-		ops := genOps(i)
+		ops := sliceutils.GenOps(i)
 		sl.Clear()
 		a := make([]int, 0)
 		for _, o := range ops {
@@ -279,7 +279,7 @@ func benchmarkRandomOpSequenceWithSlice(ops []sliceutils.Op, a []int, l int) {
 func BenchmarkRandomOpSequence(b *testing.B) {
 	const nops = 500
 
-	ops := genOps(nops)
+	ops := sliceutils.GenOps(nops)
 
 	for i := 0; i < 100000; i += 1000 {
 		var sl ISkipList
@@ -380,42 +380,4 @@ func applyOpToISkipList(op *sliceutils.Op, sl *ISkipList) {
 	case sliceutils.OpSwap:
 		sl.Swap(op.Index1, op.Index2)
 	}
-}
-
-var randState *pcg32
-
-func genOps(n int) []sliceutils.Op {
-	if randState == nil {
-		randState = newPCG32()
-		randState.Seed(randSeed1, randSeed2)
-	}
-
-	ops := make([]sliceutils.Op, n)
-	slLen := 0
-	for i := 0; i < n; i++ {
-		r := randState.Random()
-		if slLen == 0 || r < ^uint32(0)/3 {
-			ops[i].Kind = sliceutils.OpInsert
-			ops[i].Elem = int(r)
-			if ops[i].Elem != 0 {
-				ops[i].Elem %= 100
-			}
-			if slLen == 0 {
-				ops[i].Index1 = 0
-			} else {
-				ops[i].Index1 = int(r) % slLen
-			}
-			slLen++
-		} else if slLen >= 1 || r < (^uint32(0)/3)*2 {
-			ops[i].Kind = sliceutils.OpSwap
-			ops[i].Index1 = int(r) % slLen
-			ops[i].Index2 = int(randState.Random()) % slLen
-		} else {
-			ops[i].Kind = sliceutils.OpRemove
-			ops[i].Index1 = int(r) % slLen
-			slLen--
-		}
-	}
-
-	return ops
 }
