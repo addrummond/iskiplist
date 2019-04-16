@@ -64,6 +64,16 @@ func (l *BufferedISkipList) Clear() {
 	l.iskiplist.Clear()
 }
 
+func (l *BufferedISkipList) Copy() *BufferedISkipList {
+	var nw BufferedISkipList
+	nw.start = make([]iskiplist.ElemType, len(l.start), len(l.start))
+	copy(nw.start, l.start)
+	nw.end = make([]iskiplist.ElemType, len(l.end), len(l.end))
+	copy(nw.end, l.end)
+	nw.iskiplist = *l.iskiplist.Copy()
+	return &nw
+}
+
 func (l *BufferedISkipList) PushBack(elem iskiplist.ElemType) {
 	checkEndSliceGrowth(l)
 	l.end = append(l.end, elem)
@@ -283,4 +293,26 @@ func (l *BufferedISkipList) IterateRangeI(from, to int, f func(int, *iskiplist.E
 			break
 		}
 	}
+}
+
+func (l *BufferedISkipList) ForAllRange(from, to int, f func(*iskiplist.ElemType)) {
+	l.IterateRange(from, to, func(e *iskiplist.ElemType) bool {
+		f(e)
+		return true
+	})
+}
+
+func (l *BufferedISkipList) ForAllRangeI(from, to int, f func(int, *iskiplist.ElemType)) {
+	l.IterateRangeI(from, to, func(i int, e *iskiplist.ElemType) bool {
+		f(i, e)
+		return true
+	})
+}
+
+func (l *BufferedISkipList) ForAll(f func(*iskiplist.ElemType)) {
+	l.ForAllRange(0, l.Length(), f)
+}
+
+func (l *BufferedISkipList) ForAllI(f func(int, *iskiplist.ElemType)) {
+	l.ForAllRangeI(0, l.Length(), f)
 }
