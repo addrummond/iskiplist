@@ -817,8 +817,8 @@ func insertAtBeginning(l *ISkipList, elem ElemType) {
 // PushFront adds an element to the beginning of the ISkipList. PushFront runs
 // in constant time.
 func (l *ISkipList) PushFront(elem ElemType) {
-	l.length++
 	insertAtBeginning(l, elem)
+	l.length++
 }
 
 // PopFront removes the first element of the list and returns it. The second
@@ -838,12 +838,13 @@ func (l *ISkipList) PopFront() (r ElemType, ok bool) {
 func (l *ISkipList) PushBack(elem ElemType) {
 	index := l.length
 
-	l.length++
-
 	if index == 0 {
 		insertAtBeginning(l, elem)
+		l.length++
 		return
 	}
+
+	l.length++
 
 	prevs := make([]*listNode, l.nLevels)
 	prevIndices := make([]int, l.nLevels)
@@ -916,12 +917,13 @@ func (l *ISkipList) Insert(index int, elem ElemType) {
 		l.cache.invalidate()
 	}
 
-	l.length++
-
 	if index == 0 {
 		insertAtBeginning(l, elem)
+		l.length++
 		return
 	}
+
+	l.length++
 
 	prevs := make([]*listNode, l.nLevels)
 	prevIndices := make([]int, l.nLevels)
