@@ -218,7 +218,7 @@ func TestRandomOpSequences(t *testing.T) {
 	sl.Seed(randSeed1, randSeed2)
 	for i := 1; i < 100; i++ {
 		t.Logf("----- Generating random sequence of %v operations -----\n", i)
-		ops := sliceutils.GenOps(i)
+		ops := sliceutils.GenOps(i, 0)
 		sl.Clear()
 		a := make([]int, 0)
 		for _, o := range ops {
@@ -279,7 +279,7 @@ func benchmarkRandomOpSequenceWithSlice(ops []sliceutils.Op, a []int, l int) {
 func BenchmarkRandomOpSequence(b *testing.B) {
 	const nops = 500
 
-	ops := sliceutils.GenOps(nops)
+	ops := sliceutils.GenOps(nops, 0)
 
 	for i := 0; i < 100000; i += 1000 {
 		var sl ISkipList
@@ -287,7 +287,7 @@ func BenchmarkRandomOpSequence(b *testing.B) {
 		for j := 0; j < i; j++ {
 			sl.PushBack(j)
 		}
-		b.Run(fmt.Sprintf("With ISkipList [initial length %v, n_ops=%v]", i, nops), func(b *testing.B) {
+		b.Run(fmt.Sprintf("With ISkipList [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
 				benchmarkRandomOpSequenceWithISKipList(ops, &sl, nops)
 			}
@@ -297,7 +297,7 @@ func BenchmarkRandomOpSequence(b *testing.B) {
 		for j := 0; j < i; j++ {
 			a[j] = j
 		}
-		b.Run(fmt.Sprintf("With slice [initial length %v, n_ops=%v]", i, nops), func(b *testing.B) {
+		b.Run(fmt.Sprintf("With slice [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
 
 			for j := 0; j < b.N; j++ {
 				benchmarkRandomOpSequenceWithSlice(ops, a, nops)

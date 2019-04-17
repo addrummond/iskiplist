@@ -114,7 +114,7 @@ func (l *BufferedISkipList) PtrAt(i int) *iskiplist.ElemType {
 
 func (l *BufferedISkipList) Swap(index1, index2 int) {
 	if index1 < 0 || index1 >= l.Length() {
-		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", index1, l))
+		panic(fmt.Sprintf("[1] Out of bounds index %v into BufferedISkipList %+v (%v)", index1, l, l.Length()))
 	}
 	if index2 < 0 || index2 >= l.Length() {
 		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", index2, l))
