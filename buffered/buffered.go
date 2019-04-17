@@ -15,7 +15,7 @@ type BufferedISkipList struct {
 
 // If a slice is no longer than this, then we perform all operations directly on
 // the slice when possible.
-const noHoldsBarredMaxLength = 64
+const noHoldsBarredMaxLength = 128
 
 // We don't let either 'start' or 'end' grow longer than maxSliceLength.
 // This is to prevent counterintuitive performance characteristics. For example,
@@ -26,7 +26,7 @@ const noHoldsBarredMaxLength = 64
 // the 'end' slice, containing half a million elements, will first have to be
 // pushed onto the ISkipList. We can avoid this kind of situation by not letting
 // 'start' or 'end' grow too big.
-const maxSliceLength = 128
+const maxSliceLength = 256
 
 func checkStartSliceGrowth(l *BufferedISkipList) {
 	if len(l.start) >= maxSliceLength {
@@ -178,7 +178,7 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	}
 
 	// insertion within 'start' where 'start' is small
-	if index < len(l.start) && len(l.start) <= noHoldsBarredMaxLength {
+	if index <= len(l.start) && len(l.start) <= noHoldsBarredMaxLength {
 		sliceutils.SliceInsert(&l.start, len(l.start)-index, elem)
 		return
 	}
@@ -211,7 +211,6 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	}
 	for i := 0; i < index-len(l.start)-l.iskiplist.Length(); i++ {
 		l.iskiplist.PushBack(l.end[i])
-
 	}
 	l.iskiplist.PushBack(elem)
 	l.end = l.end[index-len(l.start)-l.iskiplist.Length():]
