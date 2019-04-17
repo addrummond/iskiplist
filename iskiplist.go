@@ -429,7 +429,7 @@ func (l *ISkipList) Update(i int, upd func(ElemType) ElemType) {
 // must be >= 0 and <= the length of the ISkipList. If neither 'from' nor 'to'
 // is out of bounds but to <= from, then this is a no-op.
 func (l *ISkipList) CopyRangeToSlice(from, to int, slice []ElemType) {
-	if from < 0 || from >= l.length {
+	if from < 0 || from > l.length {
 		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", from, l))
 	}
 	if to < 0 || to > l.length {
@@ -463,7 +463,7 @@ func (l *ISkipList) CopyToSlice(slice []ElemType) {
 // operations on the ISkipList. Keeping a pointer to a deleted element will
 // prevent full garbage collection of the associated skip list nodes.
 func (l *ISkipList) IterateRange(from, to int, f func(*ElemType) bool) {
-	if from < 0 || from >= l.length {
+	if from < 0 || from > l.length {
 		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", from, l))
 	}
 	if to < 0 || to > l.length {
@@ -495,7 +495,7 @@ func (l *ISkipList) IterateRange(from, to int, f func(*ElemType) bool) {
 // element will prevent full garbage collection of the associated skip list
 // nodes.
 func (l *ISkipList) IterateRangeI(from, to int, f func(int, *ElemType) bool) {
-	if from < 0 || from >= l.length {
+	if from < 0 || from > l.length {
 		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", from, l))
 	}
 	if to < 0 || to > l.length {
