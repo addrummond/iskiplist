@@ -110,7 +110,6 @@ func GenOps(n int, initialLength int) []Op {
 			ops[i].Kind = OpRemove
 			ops[i].Index1 = int(r) % initialLength
 			initialLength--
-			panic("REM")
 		}
 	}
 
