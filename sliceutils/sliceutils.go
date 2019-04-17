@@ -102,7 +102,7 @@ func GenOps(n int, initialLength int) []Op {
 				ops[i].Index1 = int(r) % initialLength
 			}
 			initialLength++
-		} else if initialLength >= 1 || r < ((^uint32(0))/3)*2 {
+		} else if initialLength >= 1 && r < ((^uint32(0))/3)*2 {
 			ops[i].Kind = OpSwap
 			ops[i].Index1 = int(r) % initialLength
 			ops[i].Index2 = int(randState.Random()) % initialLength
