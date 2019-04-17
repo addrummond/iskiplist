@@ -1074,7 +1074,7 @@ func debugPrintList(node *listNode, pointerDigits int) string {
 func debugPrintISkipList(l *ISkipList, pointerDigits int) string {
 	var s strings.Builder
 
-	s.WriteString("ISkipList:\n")
+	s.WriteString(fmt.Sprintf("ISkipList of length %v:\n", l.length))
 
 	levelRoot := l.root
 	for levelRoot != nil {
