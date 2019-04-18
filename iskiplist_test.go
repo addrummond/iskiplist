@@ -254,31 +254,32 @@ func TestInsertAndSwap(t *testing.T) {
 func TestRandomOpSequences(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
-	for i := 1; i < 100; i++ {
+	for i := 1; i < 200; i++ {
 		t.Logf("----- Generating random sequence of %v operations -----\n", i)
 		ops := genOps(i)
 		sl.Clear()
 		a := make([]int, 0)
 		for _, o := range ops {
-			t.Logf("%v\n", debugPrintISkipList(&sl, 3))
 			t.Logf("%s\n", printOp(&o))
 			applyToSlice(&o, &a)
 			applyToISkipList(&o, &sl)
-		}
+			t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+			t.Logf("%+v\n", a)
 
-		t.Logf("Reported lengths: %v %v\n", sl.Length(), len(a))
+			t.Logf("Reported lengths: %v %v\n", sl.Length(), len(a))
 
-		if len(a) != sl.Length() {
-			t.Errorf("ISkipList has wrong length (%v instead of %v)\n", sl.Length(), len(a))
-		}
+			if len(a) != sl.Length() {
+				t.Errorf("ISkipList has wrong length (%v instead of %v)\n", sl.Length(), len(a))
+			}
 
-		// Equality check by looping over indices.
-		t.Logf("Testing result via index loop...\n")
-		for i, v := range a {
-			t.Logf("Checking %v\n", i)
-			e := sl.At(i)
-			if v != e {
-				t.Errorf("Expected value %v at index %v, got %v instead (index loop).\n", v, i, e)
+			// Equality check by looping over indices.
+			t.Logf("Testing result via index loop...\n")
+			for i, v := range a {
+				e := sl.At(i)
+				t.Logf("Checking %v\n", i)
+				if v != e {
+					t.Errorf("Expected value %v at index %v, got %v instead (index loop).\n", v, i, e)
+				}
 			}
 		}
 
