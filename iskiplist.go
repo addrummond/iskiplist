@@ -615,7 +615,8 @@ func remove(l *ISkipList, node *listNode, index int, prevs []*listNode, prevIndi
 	}
 }
 
-// Remove removes the element at the specified index.
+// Remove removes the element at the specified index. It returns the value of
+// the removed element.
 func (l *ISkipList) Remove(index int) ElemType {
 	if index < 0 || index >= l.length {
 		panic("Index out of range in call to 'Remove'")
