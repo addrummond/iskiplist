@@ -444,12 +444,12 @@ func applyToSlice(op *op, a *[]int) {
 		if len(*a) == 0 && op.index1 == 0 {
 			*a = append(*a, op.elem)
 		} else {
-			last := (*a)[len(*a)-1]
+			var def ElemType
+			*a = append(*a, def)
 			for i := len(*a) - 1; i > op.index1; i-- {
 				(*a)[i] = (*a)[i-1]
 			}
 			(*a)[op.index1] = op.elem
-			*a = append(*a, last)
 		}
 	case opRemove:
 		for i := op.index1; i < len(*a)-1; i++ {
@@ -480,11 +480,13 @@ func genOps(n int) []op {
 		randState.Seed(randSeed1, randSeed2)
 	}
 
+	// insert 50% of the time, swap 25% of the time, remove 25% of the time.
+
 	ops := make([]op, n)
 	slLen := 0
 	for i := 0; i < n; i++ {
 		r := randState.Random()
-		if slLen == 0 || r < ^uint32(0)/3 {
+		if slLen == 0 || r < ^uint32(0)/2 {
 			ops[i].kind = opInsert
 			ops[i].elem = int(r)
 			if ops[i].elem != 0 {
@@ -496,7 +498,7 @@ func genOps(n int) []op {
 				ops[i].index1 = int(r) % slLen
 			}
 			slLen++
-		} else if slLen >= 1 && r < (^uint32(0)/3)*2 {
+		} else if slLen >= 1 && r < (^uint32(0)/4)*3 {
 			ops[i].kind = opSwap
 			ops[i].index1 = int(r) % slLen
 			ops[i].index2 = int(randState.Random()) % slLen
