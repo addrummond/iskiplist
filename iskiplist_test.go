@@ -474,7 +474,7 @@ func genOps(n int) []op {
 				ops[i].index1 = int(r) % slLen
 			}
 			slLen++
-		} else if slLen >= 1 || r < (^uint32(0)/3)*2 {
+		} else if slLen >= 1 && r < (^uint32(0)/3)*2 {
 			ops[i].kind = opSwap
 			ops[i].index1 = int(r) % slLen
 			ops[i].index2 = int(randState.Random()) % slLen
