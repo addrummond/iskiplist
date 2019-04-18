@@ -36,6 +36,23 @@ func TestInsertAtBeginning(t *testing.T) {
 	}
 }
 
+func TestRemoveFromBeginning(t *testing.T) {
+	var sl ISkipList
+	sl.Seed(randSeed1, randSeed2)
+	for i := 0; i < 20; i++ {
+		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+		sl.Insert(0, i)
+	}
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+	for i := 0; i < 20; i++ {
+		sl.Remove(0)
+		t.Logf("Removed an element:\n%v\n", DebugPrintISkipList(&sl, 3))
+	}
+	if sl.Length() != 0 || sl.length != 0 || sl.nLevels != 0 || sl.root != nil || sl.cache != nil {
+		t.Errorf("Unexpected result following removals.\n")
+	}
+}
+
 func TestTruncate(t *testing.T) {
 	const l = 100000
 	const tl1 = 10000

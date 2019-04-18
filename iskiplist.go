@@ -569,22 +569,33 @@ func (l *ISkipList) ForAllI(f func(int, *ElemType)) {
 
 // assumes that list is of length >= 2
 func removeFirst(l *ISkipList) ElemType {
-	// Find the highest level of the next node along, and get the densest level
-	// of the root node.
-	nLevels := l.nLevels
-	n := l.root
-	for ; n.nextLevel != nil; n = n.nextLevel {
-		if n.next == nil || elemToDist(n.elem) != 1 {
-			nLevels--
+	// Remove any root levels with no subsequent nodes
+	for l.root.next == nil && l.root.nextLevel != nil {
+		l.root = l.root.nextLevel
+		l.nLevels--
+	}
+
+	// Make sure all root levels exist for the next item.
+	var prev, n *listNode
+	for n = l.root; n.nextLevel != nil; n = n.nextLevel {
+		if elemToDist(n.elem) > 1 {
+			n.next = &listNode{
+				elem:      elemToDist(distToElem(n.elem) - 1),
+				next:      n.next,
+				nextLevel: nil,
+			}
+			// (don't need to set n.elem since it's going to be removed)
 		}
+		if prev != nil {
+			prev.nextLevel = n.next
+		}
+		prev = n.next
+	}
+	if prev != nil {
+		prev.nextLevel = n.next
 	}
 
-	// 'n' is now the densest level of the root
-	l.root = n.next
-
-	if l.root != nil {
-		addNRootLevels(l, int(l.nLevels-nLevels))
-	}
+	l.root = l.root.next
 
 	return n.elem
 }
@@ -605,8 +616,6 @@ func remove(l *ISkipList, node *listNode, prevs []*listNode) {
 			}
 		}
 	}
-
-	maybeShrink(l)
 }
 
 // Remove removes the element at the specified index.
@@ -619,21 +628,25 @@ func (l *ISkipList) Remove(index int) ElemType {
 		l.cache.invalidate()
 	}
 
-	l.length--
-	if l.length == 0 {
+	if l.length-1 == 0 {
+		l.length--
 		v := l.root.elem
 		l.root = nil
+		l.nLevels = 0
 		return v
 	}
 
 	if index == 0 {
-		return removeFirst(l)
+		v := removeFirst(l)
+		l.length--
+		return v
 	}
 
 	prevs := make([]*listNode, l.nLevels)
 	prevIndices := make([]int, l.nLevels)
 	node := getToWithPrevIndices(l.root, index-1, prevs, prevIndices)
 	remove(l, node, prevs)
+	l.length--
 	copyToCache(l, index-1, prevs, prevIndices)
 
 	return node.elem
@@ -753,7 +766,7 @@ func shrink(l *ISkipList, levels int) {
 func maybeShrink(l *ISkipList) {
 	levs := int32(nTosses(l))
 
-	levelsToRemove := levs - l.nLevels + 1
+	levelsToRemove := l.nLevels - levs
 	if levelsToRemove < 0 {
 		levelsToRemove = 0
 	}
@@ -788,11 +801,11 @@ func insertAtBeginning(l *ISkipList, elem ElemType) {
 	}
 
 	// Figure out how many levels the previous root node should have now.
-	oldl := nTosses(l)
+	oldrl := nTosses(l)
 
 	r := l.root
 	n := rt
-	for i := 0; i < int(l.nLevels)-oldl; i++ {
+	for i := 0; i < int(l.nLevels)-oldrl; i++ {
 		n.next = r.next
 		n.elem = distToElem(elemToDist(r.elem) + 1)
 		r = r.nextLevel
@@ -804,13 +817,14 @@ func insertAtBeginning(l *ISkipList, elem ElemType) {
 		r = r.nextLevel
 		n = n.nextLevel
 	}
+
 	n.next = r
 	n.elem = elem
 
 	l.root = rt
 
-	if oldl > int(l.nLevels) {
-		toAdd := oldl - int(l.nLevels)
+	if oldrl > int(l.nLevels) {
+		toAdd := oldrl - int(l.nLevels)
 		addNRootLevels(l, toAdd)
 		l.nLevels = int32(l.nLevels + int32(toAdd))
 	}
@@ -1079,7 +1093,7 @@ func debugPrintList(node *listNode, pointerDigits int) string {
 func DebugPrintISkipList(l *ISkipList, pointerDigits int) string {
 	var s strings.Builder
 
-	s.WriteString(fmt.Sprintf("ISkipList of length %v:\n", l.length))
+	s.WriteString(fmt.Sprintf("ISkipList of length %v with %v levels:\n", l.length, l.nLevels+1))
 
 	levelRoot := l.root
 	for levelRoot != nil {
