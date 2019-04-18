@@ -101,7 +101,7 @@ func TestTruncate(t *testing.T) {
 	}
 	sl.Truncate(tl2)
 	t.Logf("Number of levels with %v elems: %v\n", tl2, sl.nLevels+1)
-	if sl.nLevels != 7 {
+	if sl.nLevels != 6 {
 		err = true
 	}
 	sl.Truncate(tl3)
@@ -116,7 +116,7 @@ func TestTruncate(t *testing.T) {
 	}
 	sl.Truncate(tl5)
 	t.Logf("Number of levels with %v elems: %v\n", tl5, sl.nLevels+1)
-	if sl.nLevels != 0 {
+	if sl.nLevels != 2 {
 		err = true
 	}
 
