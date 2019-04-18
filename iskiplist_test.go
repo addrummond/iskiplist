@@ -43,7 +43,9 @@ func TestRemoveFromBeginning(t *testing.T) {
 	}
 	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 	for i := 0; i < 20; i++ {
-		sl.Remove(0)
+		if sl.Remove(0) != 20-i-1 {
+			t.Errorf("Unexpected value removed.\n")
+		}
 		t.Logf("Removed an element:\n%v\n", DebugPrintISkipList(&sl, 3))
 	}
 	if sl.Length() != 0 || sl.length != 0 || sl.nLevels != 0 || sl.root != nil || sl.cache != nil {
