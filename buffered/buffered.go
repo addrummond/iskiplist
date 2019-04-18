@@ -25,7 +25,9 @@ const noHoldsBarredMaxLength = 128
 // expect this to be a fast O(log n) operation. But in fact, the first half of
 // the 'end' slice, containing half a million elements, will first have to be
 // pushed onto the ISkipList. We can avoid this kind of situation by not letting
-// 'start' or 'end' grow too big.
+// 'start' or 'end' grow too big. This doesn't increase aggregate performance,
+// but makes the performance characteristics of individual operations more
+// predictable.
 const maxSliceLength = 256
 
 func checkStartSliceGrowth(l *BufferedISkipList) {
@@ -71,6 +73,38 @@ func (l *BufferedISkipList) Copy() *BufferedISkipList {
 	nw.end = make([]iskiplist.ElemType, len(l.end), len(l.end))
 	copy(nw.end, l.end)
 	nw.iskiplist = *l.iskiplist.Copy()
+	return &nw
+}
+
+func (l *BufferedISkipList) CopyRange(from, to int) *BufferedISkipList {
+	if from < 0 || from > l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", from, l))
+	}
+	if to < 0 || to > l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", to, l))
+	}
+
+	var nw BufferedISkipList
+	if from < len(l.start) {
+		nw.start = l.start[:len(l.start)-from]
+	}
+	if from < len(l.start)+l.iskiplist.Length() {
+		f := from - len(l.start)
+		if f < 0 {
+			f = 0
+		}
+		t := to - len(l.start)
+		if t > l.iskiplist.Length() {
+			t = l.iskiplist.Length()
+		}
+		nw.iskiplist = *l.iskiplist.CopyRange(f, t)
+	}
+	if to-len(l.start)-l.iskiplist.Length() >= 0 {
+		nw.end = nw.end[:to-len(l.start)-l.iskiplist.Length()]
+	} else {
+		nw.end = nil
+	}
+
 	return &nw
 }
 
