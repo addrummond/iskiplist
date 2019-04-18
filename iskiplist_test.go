@@ -27,7 +27,6 @@ func TestInsertAtBeginning(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
 	for i := 0; i < 10; i++ {
-		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 		sl.Insert(0, i)
 	}
 	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
@@ -257,31 +256,32 @@ func TestInsertAndSwap(t *testing.T) {
 func TestRandomOpSequences(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
-	for i := 1; i < 100; i++ {
+	for i := 1; i < 200; i++ {
 		t.Logf("----- Generating random sequence of %v operations -----\n", i)
 		ops := sliceutils.GenOps(i, 0)
 		sl.Clear()
 		a := make([]int, 0)
 		for _, o := range ops {
-			t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 			t.Logf("%s\n", sliceutils.PrintOp(&o))
 			sliceutils.ApplyOpToSlice(&o, &a)
 			applyOpToISkipList(&o, &sl)
-		}
+			t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+			t.Logf("%+v\n", a)
 
-		t.Logf("Reported lengths: %v %v\n", sl.Length(), len(a))
+			t.Logf("Reported lengths: %v %v\n", sl.Length(), len(a))
 
-		if len(a) != sl.Length() {
-			t.Errorf("ISkipList has wrong length (%v instead of %v)\n", sl.Length(), len(a))
-		}
+			if len(a) != sl.Length() {
+				t.Errorf("ISkipList has wrong length (%v instead of %v)\n", sl.Length(), len(a))
+			}
 
-		// Equality check by looping over indices.
-		t.Logf("Testing result via index loop...\n")
-		for i, v := range a {
-			t.Logf("Checking %v\n", i)
-			e := sl.At(i)
-			if v != e {
-				t.Errorf("Expected value %v at index %v, got %v instead (index loop).\n", v, i, e)
+			// Equality check by looping over indices.
+			t.Logf("Testing result via index loop...\n")
+			for i, v := range a {
+				e := sl.At(i)
+				t.Logf("Checking %v\n", i)
+				if v != e {
+					t.Errorf("Expected value %v at index %v, got %v instead (index loop).\n", v, i, e)
+				}
 			}
 		}
 
