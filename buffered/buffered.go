@@ -99,6 +99,7 @@ func (l *BufferedISkipList) CopyRange(from, to int) *BufferedISkipList {
 	if from < len(l.start) {
 		nw.start = l.start[:len(l.start)-from]
 	}
+
 	if from < len(l.start)+l.iskiplist.Length() {
 		f := from - len(l.start)
 		if f < 0 {
@@ -110,13 +111,59 @@ func (l *BufferedISkipList) CopyRange(from, to int) *BufferedISkipList {
 		}
 		nw.iskiplist = *l.iskiplist.CopyRange(f, t)
 	}
-	if to-len(l.start)-l.iskiplist.Length() >= 0 {
-		nw.end = nw.end[:to-len(l.start)-l.iskiplist.Length()]
+
+	if to-len(l.start)-l.iskiplist.Length() >= 0 && from < to {
+		f := from - len(l.start) - l.iskiplist.Length()
+		if f < 0 {
+			f = 0
+		}
+		nw.end = nw.end[f : to-len(l.start)-l.iskiplist.Length()]
 	} else {
 		nw.end = nil
 	}
 
 	return &nw
+}
+
+func (l *BufferedISkipList) CopyRangeToSlice(from, to int, slice []iskiplist.ElemType) {
+	if from < 0 || from > l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", from, l))
+	}
+	if to < 0 || to > l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", to, l))
+	}
+
+	slicePos, i := 0, 0
+	if from < len(l.start) {
+		for i, slicePos = len(l.start)-from-1, 0; i >= 0; i, slicePos = i-1, slicePos+1 {
+			slice[slicePos] = l.start[i]
+		}
+	}
+
+	if from < len(l.start)+l.iskiplist.Length() {
+		f := from - len(l.start)
+		if f < 0 {
+			f = 0
+		}
+		t := to - len(l.start)
+		if t > l.iskiplist.Length() {
+			t = l.iskiplist.Length()
+		}
+		l.CopyRangeToSlice(f, t, slice[len(l.start)-from:])
+		slicePos += t - f
+	}
+
+	if to-len(l.start)-l.iskiplist.Length() >= 0 && from < to {
+		f := from - len(l.start) - l.iskiplist.Length()
+		if f < 0 {
+			f = 0
+		}
+		copy(slice[slicePos:], l.end[f:to-len(l.start)-l.iskiplist.Length()])
+	}
+}
+
+func (l *BufferedISkipList) CopyToSlice(slice []iskiplist.ElemType) {
+	l.CopyRangeToSlice(0, l.Length(), slice)
 }
 
 func (l *BufferedISkipList) PushBack(elem iskiplist.ElemType) {
@@ -389,6 +436,14 @@ func (l *BufferedISkipList) IterateRangeI(from, to int, f func(int, *iskiplist.E
 			break
 		}
 	}
+}
+
+func (l *BufferedISkipList) Iterate(f func(*iskiplist.ElemType) bool) {
+	l.IterateRange(0, l.Length(), f)
+}
+
+func (l *BufferedISkipList) IterateI(f func(int, *iskiplist.ElemType) bool) {
+	l.IterateRangeI(0, l.Length(), f)
 }
 
 func (l *BufferedISkipList) ForAllRange(from, to int, f func(*iskiplist.ElemType)) {
