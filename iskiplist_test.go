@@ -25,7 +25,6 @@ func TestInsertAtBeginning(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
 	for i := 0; i < 10; i++ {
-		fmt.Printf("%v\n", debugPrintISkipList(&sl, 3))
 		sl.Insert(0, i)
 	}
 	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
@@ -38,15 +37,15 @@ func TestRemoveFromBeginning(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 20; i++ {
-		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+		t.Logf("%v\n", debugPrintISkipList(&sl, 3))
 		sl.Insert(0, i)
 	}
-	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
 	for i := 0; i < 20; i++ {
 		if sl.Remove(0) != 20-i-1 {
 			t.Errorf("Unexpected value removed.\n")
 		}
-		t.Logf("Removed an element:\n%v\n", DebugPrintISkipList(&sl, 3))
+		t.Logf("Removed an element:\n%v\n", debugPrintISkipList(&sl, 3))
 	}
 	if sl.Length() != 0 || sl.length != 0 || sl.nLevels != 0 || sl.root != nil || sl.cache != nil {
 		t.Errorf("Unexpected result following removals.\n")
@@ -57,17 +56,17 @@ func TestRemoveAtTwo(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 20; i++ {
-		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+		t.Logf("%v\n", debugPrintISkipList(&sl, 3))
 		sl.Insert(0, i)
 	}
-	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
 	ev := 17
 	for i := 0; i < 18; i++ {
 		v := sl.Remove(2)
 		if v != ev {
 			t.Errorf("Unexpected value removed (%v vs %v).\n", v, ev)
 		}
-		t.Logf("Removed an element:\n%v\n", DebugPrintISkipList(&sl, 3))
+		t.Logf("Removed an element:\n%v\n", debugPrintISkipList(&sl, 3))
 		ev--
 	}
 	if sl.Length() != 2 {
