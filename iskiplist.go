@@ -183,7 +183,8 @@ func (l *ISkipList) Length() int {
 	return l.length
 }
 
-// Clear empties an ISkipList
+// Clear empties an ISkipList. Following a call to Clear(), an ISkipList behaves
+// the same as an ISkipList initialized with its default value.
 func (l *ISkipList) Clear() {
 	l.length = 0
 	l.nLevels = 0
