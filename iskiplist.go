@@ -283,17 +283,13 @@ func copyToCache(l *ISkipList, index int, prevs []*listNode, prevIndices []int) 
 
 func getToWithPrevIndicesTryingCache(l *ISkipList, i int, prevs []*listNode, prevIndices []int) *listNode {
 	var node *listNode
-	if l.cache != nil && l.cache.isValid() && l.cache.index <= i {
-		p := l.root
-		pi := 0
-		if len(l.cache.prevs) > 0 {
-			p = l.cache.prevs[0]
-			pi = l.cache.prevIndices[0]
-		}
+	if l.cache != nil && l.cache.isValid() && len(l.cache.prevs) > 0 && l.cache.index <= i {
+		p := l.cache.prevs[0]
+		pi := l.cache.prevIndices[0]
 		node = getToWithPrevIndices(p, i-pi, prevs, prevIndices)
 
 		for j := range prevIndices {
-			prevIndices[j] += l.cache.prevIndices[0]
+			prevIndices[j] += pi
 		}
 	} else {
 		node = getToWithPrevIndices(l.root, i, prevs, prevIndices)
@@ -669,6 +665,10 @@ func (l *ISkipList) Truncate(n int) {
 		return
 	}
 
+	if l.cache != nil && l.cache.index >= n {
+		l.cache.invalidate()
+	}
+
 	prevs := make([]*listNode, l.nLevels)
 	prevIndices := make([]int, l.nLevels)
 	node := getToWithPrevIndicesTryingCache(l, n-1, prevs, prevIndices)
@@ -676,10 +676,6 @@ func (l *ISkipList) Truncate(n int) {
 	node.next = nil
 	for _, p := range prevs {
 		p.next = nil
-	}
-
-	if l.cache != nil && l.cache.index >= n {
-		l.cache = nil
 	}
 
 	l.length = n
@@ -784,13 +780,13 @@ func insertAtBeginning(l *ISkipList, elem ElemType) {
 	// root node, and that the old root node has just been inserted. Thus, we
 	// randomly choose again the number of levels for the old root node.
 
+	if l.cache != nil {
+		l.cache.invalidate()
+	}
+
 	if l.length == 0 {
 		l.root = singleton(elem)
 		return
-	}
-
-	if l.cache != nil {
-		l.cache.invalidate()
 	}
 
 	// The new root node
@@ -867,18 +863,14 @@ func (l *ISkipList) PushBack(elem ElemType) {
 	prevIndices := make([]int, l.nLevels)
 
 	var node *listNode
-	if l.cache != nil && l.cache.isValid() && l.cache.index <= index-1 {
-		p := l.root
-		pi := 0
-		if len(l.cache.prevs) > 0 {
-			p = l.cache.prevs[0]
-			pi = l.cache.prevIndices[0]
-		}
+	if l.cache != nil && l.cache.isValid() && len(l.cache.prevs) > 0 && l.cache.index <= index-1 {
+		p := l.cache.prevs[0]
+		pi := l.cache.prevIndices[0]
 
 		node = getToWithPrevIndices(p, index-1-pi, prevs, prevIndices)
 
 		for j := range prevIndices {
-			prevIndices[j] += l.cache.prevIndices[0]
+			prevIndices[j] += pi
 		}
 	} else {
 		node = getToWithPrevIndices(l.root, index-1, prevs, prevIndices)
@@ -930,7 +922,7 @@ func (l *ISkipList) Insert(index int, elem ElemType) {
 		panic("Index out of range in call to 'Insert'")
 	}
 
-	if l.cache != nil && l.cache.index > index {
+	if l.cache != nil && l.cache.index >= index {
 		l.cache.invalidate()
 	}
 
@@ -946,18 +938,14 @@ func (l *ISkipList) Insert(index int, elem ElemType) {
 	prevIndices := make([]int, l.nLevels)
 
 	var node *listNode
-	if l.cache != nil && l.cache.isValid() && l.cache.index <= index-1 {
-		p := l.root
-		pi := 0
-		if len(l.cache.prevs) > 0 {
-			p = l.cache.prevs[0]
-			pi = l.cache.prevIndices[0]
-		}
+	if l.cache != nil && l.cache.isValid() && len(l.cache.prevs) > 0 && l.cache.index <= index-1 {
+		p := l.cache.prevs[0]
+		pi := l.cache.prevIndices[0]
 
 		node = getToWithPrevIndices(p, index-1-pi, prevs, prevIndices)
 
 		for j := range prevIndices {
-			prevIndices[j] += l.cache.prevIndices[0]
+			prevIndices[j] += pi
 		}
 	} else {
 		node = getToWithPrevIndices(l.root, index-1, prevs, prevIndices)
@@ -1004,10 +992,6 @@ func (l *ISkipList) Swap(index1, index2 int) {
 	}
 	if index1 > index2 {
 		index1, index2 = index2, index1
-	}
-
-	if l.cache != nil && l.cache.index > index1 {
-		l.cache.invalidate()
 	}
 
 	prevs := make([]*listNode, l.nLevels)
