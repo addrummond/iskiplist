@@ -1,3 +1,14 @@
+// Package bufferediskiplist provides a version of ISkipList that buffers
+// insertions at the start and end of the sequence, and that does not construct
+// a skip list structure until the sequence reaches a certain length. This
+// reduces the overhead of using an ISkipList in instances where the sequence
+// of values is often short.
+//
+// The API for BufferedISkipList is the same as for ISkipList but for one
+// important difference in the semantics of PtrAt(). Pointers to elements in
+// a BufferedISkiplist are **NOT** guaranteed to remain valid following
+// subsequent mutation of the BufferedISkipList (i.e., adding or removing
+// elements).
 package bufferediskiplist
 
 import (
@@ -118,6 +129,24 @@ func (l *BufferedISkipList) PushFront(elem iskiplist.ElemType) {
 	l.start = append(l.start, elem)
 }
 
+func (l *BufferedISkipList) PopBack() (r iskiplist.ElemType, ok bool) {
+	if l.Length() == 0 {
+		return
+	}
+	ok = true
+	r = l.Remove(l.Length() - 1)
+	return
+}
+
+func (l *BufferedISkipList) PopFront() (r iskiplist.ElemType, ok bool) {
+	if l.Length() == 0 {
+		return
+	}
+	ok = true
+	r = l.Remove(0)
+	return
+}
+
 func (l *BufferedISkipList) At(i int) iskiplist.ElemType {
 	if i < 0 || i >= l.Length() {
 		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", i, l))
@@ -130,6 +159,24 @@ func (l *BufferedISkipList) At(i int) iskiplist.ElemType {
 		return l.iskiplist.At(i - len(l.start))
 	}
 	return l.end[i-len(l.start)-l.iskiplist.Length()]
+}
+
+func (l *BufferedISkipList) Set(i int, v iskiplist.ElemType) {
+	if i < 0 || i >= l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", i, l))
+	}
+
+	if i < len(l.start) {
+		l.start[i] = v
+		return
+	}
+
+	if i < len(l.start)+l.iskiplist.Length() {
+		l.iskiplist.Set(i-len(l.start), v)
+		return
+	}
+
+	l.end[i-len(l.start)-l.iskiplist.Length()] = v
 }
 
 func (l *BufferedISkipList) PtrAt(i int) *iskiplist.ElemType {
@@ -179,22 +226,20 @@ func (l *BufferedISkipList) Swap(index1, index2 int) {
 	*val1, *val2 = *val2, *val1
 }
 
-func (l *BufferedISkipList) Remove(index int) {
+func (l *BufferedISkipList) Remove(index int) iskiplist.ElemType {
 	if index < 0 || index >= l.Length() {
 		panic("Index out of range in call to 'Remove'")
 	}
 
 	if index < len(l.start) {
-		sliceutils.SliceRemove(&l.start, len(l.start)-index-1)
-		return
+		return sliceutils.SliceRemove(&l.start, len(l.start)-index-1)
 	}
 
 	if index < len(l.start)+l.iskiplist.Length() {
-		l.iskiplist.Remove(index - len(l.start))
-		return
+		return l.iskiplist.Remove(index - len(l.start))
 	}
 
-	sliceutils.SliceRemove(&l.end, index-len(l.start)-l.iskiplist.Length())
+	return sliceutils.SliceRemove(&l.end, index-len(l.start)-l.iskiplist.Length())
 }
 
 func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
@@ -366,4 +411,27 @@ func (l *BufferedISkipList) ForAll(f func(*iskiplist.ElemType)) {
 
 func (l *BufferedISkipList) ForAllI(f func(int, *iskiplist.ElemType)) {
 	l.ForAllRangeI(0, l.Length(), f)
+}
+
+func (l *BufferedISkipList) Truncate(n int) {
+	if n < 0 || n > l.Length() {
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", n, l))
+	}
+
+	if n >= len(l.start)+l.iskiplist.Length() {
+		l.end = l.end[:n-len(l.start)-l.iskiplist.Length()]
+		return
+	}
+
+	if n >= len(l.start) {
+		l.iskiplist.Truncate(n - len(l.start))
+		return
+	}
+
+	l.start = l.start[:n]
+}
+
+func (l *BufferedISkipList) Update(i int, upd func(iskiplist.ElemType) iskiplist.ElemType) {
+	p := l.PtrAt(i)
+	*p = upd(*p)
 }

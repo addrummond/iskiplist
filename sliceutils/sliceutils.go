@@ -23,11 +23,13 @@ func SliceInsert(a *[]elemType, index int, elem elemType) {
 	}
 }
 
-func SliceRemove(a *[]elemType, index int) {
+func SliceRemove(a *[]elemType, index int) elemType {
+	e := (*a)[index]
 	for i := index; i < len(*a)-1; i++ {
 		(*a)[i] = (*a)[i+1]
 	}
 	*a = (*a)[:len(*a)-1]
+	return e
 }
 
 func SliceSwap(a *[]elemType, index1, index2 int) {
