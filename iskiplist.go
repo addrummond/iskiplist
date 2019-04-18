@@ -600,19 +600,21 @@ func removeFirst(l *ISkipList) ElemType {
 	return n.elem
 }
 
-func remove(l *ISkipList, node *listNode, prevs []*listNode) {
-	nn := node.next.next // node.next can't be nil because it precedes the element to be removed
-	node.next = nn
+func remove(l *ISkipList, node *listNode, index int, prevs []*listNode, prevIndices []int) {
+	node.next = node.next.next             // node.next can't be nil because it precedes the element to be removed
 	for i := len(prevs) - 1; i >= 0; i-- { // from densest to sparsest
 		p := prevs[i]
+		pi := prevIndices[i]
 		if p.next != nil {
 			d := elemToDist(p.elem) // if it's in prevs, we know it's not on the densest level, so elem is the distance
-			if d == 1 {
-				p.elem = p.next.elem
+			if index == d+pi {
+				p.elem = distToElem(elemToDist(p.next.elem) + elemToDist(p.elem) - 1)
 				pnn := p.next.next
 				p.next = pnn
-			} else {
+			} else if index < d+pi {
 				p.elem = distToElem(elemToDist(p.elem) - 1)
+			} else {
+				panic("Internal error in 'remove': unexpected index/distance value")
 			}
 		}
 	}
@@ -645,11 +647,12 @@ func (l *ISkipList) Remove(index int) ElemType {
 	prevs := make([]*listNode, l.nLevels)
 	prevIndices := make([]int, l.nLevels)
 	node := getToWithPrevIndices(l.root, index-1, prevs, prevIndices)
-	remove(l, node, prevs)
+	e := node.next.elem
+	remove(l, node, index, prevs, prevIndices)
 	l.length--
 	copyToCache(l, index-1, prevs, prevIndices)
 
-	return node.elem
+	return e
 }
 
 // Truncate reduces the length of the ISkipList to n, keeping the first n
