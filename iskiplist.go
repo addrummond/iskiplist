@@ -250,8 +250,8 @@ func copyToCache(l *ISkipList, index int, prevs []*listNode, prevIndices []int) 
 	if l.cache == nil {
 		l.cache = &indexCache{
 			index:       index,
-			prevs:       make([]*listNode, len(prevs)),
-			prevIndices: make([]int, len(prevIndices)),
+			prevs:       make([]*listNode, len(prevs), len(prevs)),
+			prevIndices: make([]int, len(prevIndices), len(prevIndices)),
 		}
 		copy(l.cache.prevs, prevs)
 		copy(l.cache.prevIndices, prevIndices)
