@@ -88,7 +88,6 @@ func GenOps(n int, initialLength int) []Op {
 
 	ops := make([]Op, n)
 	for i := 0; i < n; i++ {
-		fmt.Printf("ILEN %v\n", initialLength)
 		r := randState.Random()
 		if initialLength == 0 || r < (^uint32(0))/3 {
 			ops[i].Kind = OpInsert
