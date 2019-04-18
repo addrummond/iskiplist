@@ -114,7 +114,7 @@ func (l *BufferedISkipList) PtrAt(i int) *iskiplist.ElemType {
 
 func (l *BufferedISkipList) Swap(index1, index2 int) {
 	if index1 < 0 || index1 >= l.Length() {
-		panic(fmt.Sprintf("[1] Out of bounds index %v into BufferedISkipList %+v (%v)", index1, l, l.Length()))
+		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v (%v)", index1, l, l.Length()))
 	}
 	if index2 < 0 || index2 >= l.Length() {
 		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", index2, l))
@@ -224,7 +224,7 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 }
 
 func (l *BufferedISkipList) IterateRange(from, to int, f func(*iskiplist.ElemType) bool) {
-	if from < 0 || from >= l.Length() {
+	if from < 0 || from > l.Length() {
 		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", from, l))
 	}
 	if to < 0 || to > l.Length() {
@@ -268,7 +268,7 @@ func (l *BufferedISkipList) IterateRange(from, to int, f func(*iskiplist.ElemTyp
 }
 
 func (l *BufferedISkipList) IterateRangeI(from, to int, f func(int, *iskiplist.ElemType) bool) {
-	if from < 0 || from >= l.Length() {
+	if from < 0 || from > l.Length() {
 		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", from, l))
 	}
 	if to < 0 || to > l.Length() {
