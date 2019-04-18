@@ -53,6 +53,28 @@ func TestRemoveFromBeginning(t *testing.T) {
 	}
 }
 
+func TestRemoveAtTwo(t *testing.T) {
+	var sl ISkipList
+	sl.Seed(randSeed1, randSeed2)
+	for i := 0; i < 20; i++ {
+		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+		sl.Insert(0, i)
+	}
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+	ev := 17
+	for i := 0; i < 18; i++ {
+		v := sl.Remove(2)
+		if v != ev {
+			t.Errorf("Unexpected value removed (%v vs %v).\n", v, ev)
+		}
+		t.Logf("Removed an element:\n%v\n", DebugPrintISkipList(&sl, 3))
+		ev--
+	}
+	if sl.Length() != 2 {
+		t.Errorf("Unexpected result following removals.\n")
+	}
+}
+
 func TestTruncate(t *testing.T) {
 	const l = 100000
 	const tl1 = 10000
