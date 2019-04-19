@@ -96,6 +96,10 @@ func (l *BufferedISkipList) CopyRange(from, to int) *BufferedISkipList {
 	}
 
 	var nw BufferedISkipList
+	if to <= from {
+		return &nw
+	}
+
 	if from < len(l.start) {
 		nw.start = l.start[:len(l.start)-from]
 	}
@@ -133,6 +137,10 @@ func (l *BufferedISkipList) CopyRangeToSlice(from, to int, slice []iskiplist.Ele
 		panic(fmt.Sprintf("Out of bounds index %v into BufferedISkipList %+v", to, l))
 	}
 
+	if to <= from {
+		return
+	}
+
 	slicePos, i := 0, 0
 	if from < len(l.start) {
 		for i, slicePos = len(l.start)-from-1, 0; i >= 0; i, slicePos = i-1, slicePos+1 {
@@ -149,7 +157,7 @@ func (l *BufferedISkipList) CopyRangeToSlice(from, to int, slice []iskiplist.Ele
 		if t > l.iskiplist.Length() {
 			t = l.iskiplist.Length()
 		}
-		l.CopyRangeToSlice(f, t, slice[len(l.start)-from:])
+		l.iskiplist.CopyRangeToSlice(f, t, slice[slicePos:])
 		slicePos += t - f
 	}
 

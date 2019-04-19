@@ -16,11 +16,21 @@ func TestCopy(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 10; i++ {
-		sl.PushBack(i)
+		sl.PushBack(elemToDist(i))
 	}
 	sl2 := sl.Copy()
 	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 	t.Logf("%v\n", DebugPrintISkipList(sl2, 3))
+}
+
+func TestCopyNoops(t *testing.T) {
+	var sl ISkipList
+	sl.Seed(randSeed1, randSeed2)
+	sl.PushBack(elemToDist(1))
+	sl.PushBack(elemToDist(2))
+	slice := make([]ElemType, 0)
+	sl.CopyRange(1, 0)
+	sl.CopyRangeToSlice(1, 0, slice)
 }
 
 func TestInsertAtBeginning(t *testing.T) {
