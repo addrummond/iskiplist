@@ -299,6 +299,7 @@ func (l *BufferedISkipList) Remove(index int) iskiplist.ElemType {
 }
 
 func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
+	ln := l.Length()
 	if index < 0 || index > l.Length() {
 		panic("Index out of range in call to 'Insert'")
 	}
@@ -370,6 +371,9 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	}
 	l.iskiplist.PushBack(elem)
 	l.end = l.end[index-len(l.start)-l.iskiplist.Length():]
+	if l.Length() != ln+1 {
+		panic("BUG!")
+	}
 }
 
 func (l *BufferedISkipList) IterateRange(from, to int, f func(*iskiplist.ElemType) bool) {
