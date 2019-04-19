@@ -363,16 +363,25 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	}
 
 	// insertion within 'end' where 'end' is large
+	//
+	// example of inserting X before elem at index len(start)+iskiplist.Length()+2
+	//
+	// ...    A -> B -> C -> D                   E F (G) H
+	//
+	// to
+	//
+	// ...    A -> B -> C -> D -> E -> F -> X    (G) H
 	if index < len(l.start)+l.iskiplist.Length() {
 		panic("Internal error in 'Insert'")
 	}
-	for i := 0; i < index-len(l.start)-l.iskiplist.Length(); i++ {
+	upto := index - len(l.start) - l.iskiplist.Length()
+	for i := 0; i < upto; i++ {
 		l.iskiplist.PushBack(l.end[i])
 	}
 	l.iskiplist.PushBack(elem)
-	l.end = l.end[index-len(l.start)-l.iskiplist.Length():]
+	l.end = l.end[upto:]
 	if l.Length() != ln+1 {
-		panic("BUG!")
+		panic(fmt.Sprintf("BUG! %v %v", l.Length(), ln+1))
 	}
 }
 
