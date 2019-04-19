@@ -1,4 +1,4 @@
-// Package pcg is an internal package
+// Package pcg is an internal package used by github.com/addrummond/iskiplist.
 // Taken from https://raw.githubusercontent.com/MichaelTJones/pcg/master/pcg32.go
 package pcg
 
