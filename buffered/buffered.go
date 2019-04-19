@@ -9,7 +9,7 @@
 // a BufferedISkiplist are **NOT** guaranteed to remain valid following
 // subsequent mutation of the BufferedISkipList. (Any operation that adds or
 // removes an element is a mutation; merely modifying an element's value doesn't
-// count).
+// count.)
 package bufferediskiplist
 
 import (
