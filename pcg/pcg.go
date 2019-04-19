@@ -1,5 +1,6 @@
 // Package pcg is an internal package used by github.com/addrummond/iskiplist.
-// Taken from https://raw.githubusercontent.com/MichaelTJones/pcg/master/pcg32.go
+// Taken from
+// https://raw.githubusercontent.com/MichaelTJones/pcg/d8d8f855137947b55fa38d4fe7489ed05bdc14fd/pcg32.go
 package pcg
 
 // PCG Random Number Generation
