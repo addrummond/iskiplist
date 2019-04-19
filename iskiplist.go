@@ -53,6 +53,8 @@
 // insertion/removal operations on it, you might find that the total time is
 // dominated by creation time.
 //
+// These issues can sometimes be mitigated by using a BufferedISkipList (see the
+// bufferediskiplist package) instead of an ISkipList.
 package iskiplist
 
 import (

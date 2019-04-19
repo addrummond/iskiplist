@@ -1,5 +1,5 @@
-// Package bufferediskiplist provides a version of ISkipList that buffers
-// insertions at the start and end of the sequence, and that does not construct
+// Package bufferediskiplist provides a version of ISkipList that (i) buffers
+// insertions at the start and end of the sequence and (ii) does not construct
 // a skip list structure until the sequence reaches a certain length. This
 // reduces the overhead of using an ISkipList in instances where the sequence
 // of values is often short.
@@ -7,8 +7,9 @@
 // The API for BufferedISkipList is the same as for ISkipList but for one
 // important difference in the semantics of PtrAt(). Pointers to elements in
 // a BufferedISkiplist are **NOT** guaranteed to remain valid following
-// subsequent mutation of the BufferedISkipList (i.e., adding or removing
-// elements).
+// subsequent mutation of the BufferedISkipList. (Any operation that adds or
+// removes an element is a mutation; merely modifying an element's value doesn't
+// count).
 package bufferediskiplist
 
 import (
