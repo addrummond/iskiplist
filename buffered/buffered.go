@@ -26,7 +26,7 @@ type BufferedISkipList struct {
 
 // If a slice is no longer than this, then we perform all operations directly on
 // the slice when possible.
-const noHoldsBarredMaxLength = 32
+const noHoldsBarredMaxLength = 128
 
 // We don't let either 'start' or 'end' grow longer than maxSliceLength.
 // This is to prevent counterintuitive performance characteristics. For example,
@@ -39,7 +39,7 @@ const noHoldsBarredMaxLength = 32
 // 'start' or 'end' grow too big. This doesn't increase aggregate performance,
 // but makes the performance characteristics of individual operations more
 // predictable.
-const maxSliceLength = 64
+const maxSliceLength = 1024
 
 func checkStartSliceGrowth(l *BufferedISkipList) {
 	if len(l.start) >= maxSliceLength {
