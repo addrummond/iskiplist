@@ -29,10 +29,10 @@ type Pcg32 struct {
 	increment uint64
 }
 
-// IsUninitialized was added by addrummond
-// 'state' must be odd, so we know this is in its uninitialized state if 'state'
-// is zero.
+// IsUninitialized returns true iff the Pcg32 struct has not been initialized.
+// (Added by addrummond.)
 func (p *Pcg32) IsUninitialized() bool {
+	// 'state' must be odd, so we know this is in its uninitialized state if 'state'
 	return p.state == 0
 }
 
