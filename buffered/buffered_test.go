@@ -90,7 +90,7 @@ func TestRandomOpSequences(t *testing.T) {
 		sl.Clear()
 		a := make([]int, 0)
 		for _, o := range ops {
-			//t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+			t.Logf("%v\n", debugPrintISkipList(&sl, 3))
 			t.Logf("%s\n", sliceutils.PrintOp(&o))
 			sliceutils.ApplyOpToSlice(&o, &a)
 			applyOpToBufferedISkipList(&o, &sl)
@@ -118,8 +118,7 @@ func TestRandomOpSequences(t *testing.T) {
 		sl.ForAllI(func(i int, v *iskiplist.ElemType) {
 			t.Logf("Checking %v\n", i)
 			if *v != a[i] {
-				// BAD
-				//t.Errorf("Expected value %v at index %v, got %v instead (ForAllI).\n", a[i], i, *v)
+				t.Errorf("Expected value %v at index %v, got %v instead (ForAllI).\n", a[i], i, *v)
 			}
 		})
 
@@ -128,8 +127,7 @@ func TestRandomOpSequences(t *testing.T) {
 		cp.ForAllI(func(i int, v *iskiplist.ElemType) {
 			t.Logf("Checking %v\n", i)
 			if *v != a[i] {
-				// BAD
-				//t.Errorf("Expected value %v at index %v, got %v instead (ForAllI).\n", a[i], i, *v)
+				t.Errorf("Expected value %v at index %v, got %v instead (ForAllI).\n", a[i], i, *v)
 			}
 		})
 	}
