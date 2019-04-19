@@ -209,3 +209,46 @@ func BenchmarkRandomOpSequence(b *testing.B) {
 		})
 	}
 }
+
+func TestRandomOpSequence2(t *testing.T) {
+	const nops = 500
+	const n = 10
+
+	for i := 0; i < 100000; i += 1000 {
+		ops := sliceutils.GenOps(nops, i)
+
+		var sl iskiplist.ISkipList
+		sl.Seed(randSeed1, randSeed2)
+		for j := 0; j < i; j++ {
+			if j%2 == 0 {
+				sl.PushBack(intToElem(j))
+			} else {
+				sl.PushFront(intToElem(j))
+			}
+		}
+		for j := 0; j < n; j++ {
+			benchmarkRandomOpSequenceWithISKipList(ops, &sl, nops)
+		}
+
+		var slb BufferedISkipList
+		slb.Seed(randSeed1, randSeed2)
+		for j := 0; j < i; j++ {
+			if j%2 == 0 {
+				slb.PushBack(intToElem(j))
+			} else {
+				slb.PushFront(intToElem(j))
+			}
+		}
+		for j := 0; j < n; j++ {
+			benchmarkRandomOpSequenceWithBufferedISKipList(ops, &slb, nops)
+		}
+
+		a := make([]int, i)
+		for j := 0; j < i; j++ {
+			a[j] = j
+		}
+		for j := 0; j < n; j++ {
+			benchmarkRandomOpSequenceWithSlice(ops, a, nops)
+		}
+	}
+}
