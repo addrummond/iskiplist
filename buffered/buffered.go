@@ -52,7 +52,6 @@ func checkStartSliceGrowth(l *BufferedISkipList) {
 
 func checkEndSliceGrowth(l *BufferedISkipList) {
 	if len(l.end) >= maxSliceLength {
-		panic("HERE1")
 		for _, v := range l.end {
 			l.iskiplist.PushBack(v)
 		}
@@ -299,8 +298,8 @@ func (l *BufferedISkipList) Remove(index int) iskiplist.ElemType {
 }
 
 func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
-	length := l.Length()
-	if index < 0 || index > length {
+	ln := l.Length()
+	if index < 0 || index > l.Length() {
 		panic("Index out of range in call to 'Insert'")
 	}
 
@@ -310,40 +309,59 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	// trivial case: prepend
 	if index == 0 {
 		l.PushFront(elem)
+		if l.Length() != ln+1 {
+			panic("P1")
+		}
 		return
 	}
 
 	// trivial case: append
-	if index == length {
+	if index == l.Length() {
 		l.PushBack(elem)
+		if l.Length() != ln+1 {
+			panic("2")
+		}
 		return
 	}
 
 	// insertion within 'start' where 'start' is small
 	if index <= len(l.start) && len(l.start) <= noHoldsBarredMaxLength {
 		sliceutils.SliceInsert(&l.start, len(l.start)-index, elem)
+		if l.Length() != ln+1 {
+			panic("P3")
+		}
 		return
 	}
 
 	// insertion within 'end' where 'end' is small
 	if index >= len(l.start)+l.iskiplist.Length() && len(l.end) <= noHoldsBarredMaxLength {
 		sliceutils.SliceInsert(&l.start, index-len(l.start)-l.iskiplist.Length(), elem)
+		if l.Length() != ln+1 {
+			panic("P4")
+		}
 		return
 	}
 
 	// insertion within the iskiplist
 	if index > len(l.start) && index < len(l.start)+l.iskiplist.Length() {
 		l.iskiplist.Insert(index-len(l.start), elem)
+		if l.Length() != ln+1 {
+			panic("P5")
+		}
 		return
 	}
 
 	// insertion within 'start' where 'start' is large
 	if index < len(l.start) {
 		l.iskiplist.PushFront(elem)
-		for i, j := len(l.start)-1, 0; j < index; i, j = i-1, j+1 { // remember that 'start' is reversed
+		var i, j int
+		for i, j = len(l.start)-1, 0; j < index; i, j = i-1, j+1 { // remember that 'start' is reversed
 			l.iskiplist.PushFront(l.start[i])
 		}
-		l.start = l.start[len(l.start)-index:]
+		l.start = l.start[:i+1]
+		if l.Length() != ln+1 {
+			panic(fmt.Sprintf("P5 %v %v", l.Length(), ln+1))
+		}
 		return
 	}
 
@@ -356,6 +374,9 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	}
 	l.iskiplist.PushBack(elem)
 	l.end = l.end[index-len(l.start)-l.iskiplist.Length():]
+	if l.Length() != ln+1 {
+		panic("P6")
+	}
 }
 
 func (l *BufferedISkipList) IterateRange(from, to int, f func(*iskiplist.ElemType) bool) {
