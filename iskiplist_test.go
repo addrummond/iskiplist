@@ -264,11 +264,14 @@ func TestInsertAndSwap(t *testing.T) {
 // then applies these operations to both an ISkipList and a slice. The end
 // results should match.
 func TestRandomOpSequences(t *testing.T) {
+	const nops = 1000
+	const niters = 20
+
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
-	for i := 1; i < 10000; i++ {
+	for i := 0; i < niters; i++ {
 		t.Logf("----- Generating random sequence of %v operations -----\n", i)
-		ops := sliceutils.GenOps(i, 0)
+		ops := sliceutils.GenOps(nops, 0)
 		sl.Clear()
 		a := make([]ElemType, 0)
 		for _, o := range ops {
