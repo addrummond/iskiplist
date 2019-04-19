@@ -16,7 +16,7 @@ func TestCopy(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 10; i++ {
-		sl.PushBack(elemToDist(i))
+		sl.PushBack(distToElem(i))
 	}
 	sl2 := sl.Copy()
 	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
@@ -26,8 +26,8 @@ func TestCopy(t *testing.T) {
 func TestCopyNoops(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
-	sl.PushBack(elemToDist(1))
-	sl.PushBack(elemToDist(2))
+	sl.PushBack(distToElem(1))
+	sl.PushBack(distToElem(2))
 	slice := make([]ElemType, 0)
 	sl.CopyRange(1, 0)
 	sl.CopyRangeToSlice(1, 0, slice)
@@ -37,7 +37,7 @@ func TestInsertAtBeginning(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
 	for i := 0; i < 10; i++ {
-		sl.Insert(0, i)
+		sl.Insert(0, distToElem(i))
 	}
 	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 	if sl.nLevels+1 != 3 {
@@ -50,7 +50,7 @@ func TestRemoveFromBeginning(t *testing.T) {
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 20; i++ {
 		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
-		sl.Insert(0, i)
+		sl.Insert(0, distToElem(i))
 	}
 	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 	for i := 0; i < 20; i++ {
@@ -69,7 +69,7 @@ func TestRemoveAtTwo(t *testing.T) {
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 20; i++ {
 		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
-		sl.Insert(0, i)
+		sl.Insert(0, distToElem(i))
 	}
 	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 	ev := 17
@@ -96,7 +96,7 @@ func TestTruncate(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
 	for i := 0; i < l; i++ {
-		sl.PushFront(0)
+		sl.PushFront(distToElem(0))
 	}
 	err := false
 	t.Logf("Number of levels with %v elems: %v\n", l, sl.nLevels+1)
@@ -141,19 +141,19 @@ func TestTruncate(t *testing.T) {
 func TestCreateAndIter(t *testing.T) {
 	type insert struct {
 		index int
-		value int
+		value ElemType
 	}
 	type tst struct {
 		inserts []insert
-		result  []int
+		result  []ElemType
 	}
 
 	tsts := []tst{
-		{[]insert{{0, 0}, {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}, {8, 8}, {9, 9}, {10, 10}},
-			[]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		{[]insert{{0, distToElem(0)}, {1, distToElem(1)}, {2, distToElem(2)}, {3, distToElem(3)}, {4, distToElem(4)}, {5, distToElem(5)}, {6, distToElem(6)}, {7, distToElem(7)}, {8, distToElem(8)}, {9, distToElem(9)}, {10, distToElem(10)}},
+			[]ElemType{distToElem(0), distToElem(1), distToElem(2), distToElem(3), distToElem(4), distToElem(5), distToElem(6), distToElem(7), distToElem(8), distToElem(9), distToElem(10)},
 		},
-		{[]insert{{0, 10}, {0, 9}, {0, 8}, {0, 7}, {0, 6}, {0, 5}, {0, 4}, {0, 3}, {0, 2}, {0, 1}, {0, 0}},
-			[]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		{[]insert{{0, distToElem(10)}, {0, distToElem(9)}, {0, distToElem(8)}, {0, distToElem(7)}, {0, distToElem(6)}, {0, distToElem(5)}, {0, distToElem(4)}, {0, distToElem(3)}, {0, distToElem(2)}, {0, distToElem(1)}, {0, distToElem(0)}},
+			[]ElemType{distToElem(0), distToElem(1), distToElem(2), distToElem(3), distToElem(4), distToElem(5), distToElem(6), distToElem(7), distToElem(8), distToElem(9), distToElem(10)},
 		},
 	}
 
@@ -180,7 +180,7 @@ func TestCreateAndIter(t *testing.T) {
 		}
 
 		// Test iterating through the by copying it to a slice.
-		cpy := make([]int, len(ts.result))
+		cpy := make([]ElemType, len(ts.result))
 		sl.CopyToSlice(cpy)
 		for i, v := range cpy {
 			if v != ts.result[i] {
@@ -189,7 +189,7 @@ func TestCreateAndIter(t *testing.T) {
 		}
 
 		// Test iterating through part of the list by copying it to a slice.
-		middle := make([]int, len(ts.result)-4)
+		middle := make([]ElemType, len(ts.result)-4)
 		sl.CopyRangeToSlice(2, sl.Length()-2, middle)
 		for i, v := range middle {
 			if v != ts.result[i+2] {
@@ -222,25 +222,25 @@ func TestCreateAndIter(t *testing.T) {
 
 // TestInsertAndSwap runs a simple test of the Insert() and Swap() methods.
 func TestInsertAndSwap(t *testing.T) {
-	var expected = []int{
-		0, 1, 99, 99, 4, 88, 2, 3, 88, 5, 6, 7, 8, 9,
+	var expected = []ElemType{
+		distToElem(0), distToElem(1), distToElem(99), distToElem(99), distToElem(4), distToElem(88), distToElem(2), distToElem(3), distToElem(88), distToElem(5), distToElem(6), distToElem(7), distToElem(8), distToElem(9),
 	}
 
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 10; i++ {
 		t.Logf("Inserting %v\n", i)
-		sl.Insert(i, i)
+		sl.Insert(i, distToElem(i))
 		t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 	}
 	for i := 0; i < 2; i++ {
 		t.Logf("Inserting 99\n")
-		sl.Insert(2, 99)
+		sl.Insert(2, distToElem(99))
 		t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 	}
 	for i := 0; i < 2; i++ {
 		t.Logf("Inserting 88\n")
-		sl.Insert(4, 88)
+		sl.Insert(4, distToElem(88))
 		t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 	}
 
@@ -270,7 +270,7 @@ func TestRandomOpSequences(t *testing.T) {
 		t.Logf("----- Generating random sequence of %v operations -----\n", i)
 		ops := sliceutils.GenOps(i, 0)
 		sl.Clear()
-		a := make([]int, 0)
+		a := make([]ElemType, 0)
 		for _, o := range ops {
 			t.Logf("%s\n", sliceutils.PrintOp(&o))
 			sliceutils.ApplyOpToSlice(&o, &a)
@@ -321,7 +321,7 @@ func benchmarkRandomOpSequenceWithISKipList(ops []sliceutils.Op, sl *ISkipList, 
 	}
 }
 
-func benchmarkRandomOpSequenceWithSlice(ops []sliceutils.Op, a []int, l int) {
+func benchmarkRandomOpSequenceWithSlice(ops []sliceutils.Op, a []ElemType, l int) {
 	for _, o := range ops {
 		sliceutils.ApplyOpToSlice(&o, &a)
 	}
@@ -336,7 +336,7 @@ func BenchmarkRandomOpSequence(b *testing.B) {
 		var sl ISkipList
 		sl.Seed(randSeed1, randSeed2)
 		for j := 0; j < i; j++ {
-			sl.PushBack(j)
+			sl.PushBack(distToElem(j))
 		}
 		b.Run(fmt.Sprintf("With ISkipList [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
@@ -344,7 +344,7 @@ func BenchmarkRandomOpSequence(b *testing.B) {
 			}
 		})
 
-		a := make([]int, i)
+		a := make([]ElemType, i)
 		for j := 0; j < i; j++ {
 			a[j] = j
 		}
@@ -395,7 +395,7 @@ func BenchmarkCreationMethods(b *testing.B) {
 	for i := 0; i < 100000; i += 1000 {
 		b.Run(fmt.Sprintf("Creating slice of length %v", i), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
-				a := make([]int, i, i)
+				a := make([]ElemType, i, i)
 				for k := 0; k < len(a); k++ {
 					a[k] = k
 				}
