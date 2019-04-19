@@ -17,6 +17,17 @@ func intToElem(v int) iskiplist.ElemType {
 	return v
 }
 
+func applyOpToISkipList(op *sliceutils.Op, sl *iskiplist.ISkipList) {
+	switch op.Kind {
+	case sliceutils.OpInsert:
+		sl.Insert(op.Index1, op.Elem)
+	case sliceutils.OpRemove:
+		sl.Remove(op.Index1)
+	case sliceutils.OpSwap:
+		sl.Swap(op.Index1, op.Index2)
+	}
+}
+
 func applyOpToBufferedISkipList(op *sliceutils.Op, sl *BufferedISkipList) {
 	switch op.Kind {
 	case sliceutils.OpInsert:
@@ -132,9 +143,14 @@ func TestRandomOpSequences(t *testing.T) {
 	}
 }
 
+func benchmarkRandomOpSequenceWithISKipList(ops []sliceutils.Op, sl *iskiplist.ISkipList, l int) {
+	for _, o := range ops {
+		applyOpToISkipList(&o, sl)
+	}
+}
+
 func benchmarkRandomOpSequenceWithBufferedISKipList(ops []sliceutils.Op, sl *BufferedISkipList, l int) {
 	for _, o := range ops {
-		fmt.Printf("OP len=%v %v\n", sl.Length(), sliceutils.PrintOp(&o))
 		applyOpToBufferedISkipList(&o, sl)
 	}
 }
@@ -149,10 +165,9 @@ func BenchmarkRandomOpSequence(b *testing.B) {
 	const nops = 500
 
 	for i := 0; i < 100000; i += 1000 {
-		fmt.Printf("GEN\n")
 		ops := sliceutils.GenOps(nops, i)
 
-		var sl BufferedISkipList
+		var sl iskiplist.ISkipList
 		sl.Seed(randSeed1, randSeed2)
 		for j := 0; j < i; j++ {
 			if j%2 == 0 {
@@ -161,9 +176,24 @@ func BenchmarkRandomOpSequence(b *testing.B) {
 				sl.PushFront(intToElem(j))
 			}
 		}
+		b.Run(fmt.Sprintf("With ISkipList [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				benchmarkRandomOpSequenceWithISKipList(ops, &sl, nops)
+			}
+		})
+
+		var slb BufferedISkipList
+		slb.Seed(randSeed1, randSeed2)
+		for j := 0; j < i; j++ {
+			if j%2 == 0 {
+				slb.PushBack(intToElem(j))
+			} else {
+				slb.PushFront(intToElem(j))
+			}
+		}
 		b.Run(fmt.Sprintf("With BufferedISkipList [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
-				benchmarkRandomOpSequenceWithBufferedISKipList(ops, &sl, nops)
+				benchmarkRandomOpSequenceWithBufferedISKipList(ops, &slb, nops)
 			}
 		})
 
