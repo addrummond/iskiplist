@@ -144,16 +144,8 @@ func TestRandomOpSequences(t *testing.T) {
 }
 
 func benchmarkRandomOpSequenceWithISKipList(ops []sliceutils.Op, sl *iskiplist.ISkipList, l int) {
-	fmt.Printf("START\n\n")
 	for _, o := range ops {
-		fmt.Printf("L %v\n", sl.Length())
-		fmt.Printf("%v\n", sliceutils.PrintOp(&o))
-		lbefore := sl.Length()
 		applyOpToISkipList(&o, sl)
-		lafter := sl.Length()
-		if !((o.Kind == sliceutils.OpInsert && lafter == lbefore+1) || (o.Kind == sliceutils.OpRemove && lbefore == lafter+1) || (o.Kind == sliceutils.OpSwap && lbefore == lafter)) {
-			panic("NOO!")
-		}
 	}
 }
 
@@ -175,89 +167,47 @@ func BenchmarkRandomOpSequence(b *testing.B) {
 	for i := 0; i < 100000; i += 1000 {
 		ops := sliceutils.GenOps(nops, i)
 
-		a := make([]iskiplist.ElemType, i)
-		for j := 0; j < i; j++ {
-			a[j] = intToElem(j)
-		}
 		b.Run(fmt.Sprintf("With slice [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
+				a := make([]iskiplist.ElemType, i)
+				for j := 0; j < i; j++ {
+					a[j] = intToElem(j)
+				}
+
 				benchmarkRandomOpSequenceWithSlice(ops, a, nops)
 			}
 		})
 
-		var sl iskiplist.ISkipList
-		sl.Seed(randSeed1, randSeed2)
-		for j := 0; j < i; j++ {
-			if j%2 == 0 {
-				sl.PushBack(intToElem(j))
-			} else {
-				sl.PushFront(intToElem(j))
-			}
-		}
 		b.Run(fmt.Sprintf("With ISkipList [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
+				var sl iskiplist.ISkipList
+				sl.Seed(randSeed1, randSeed2)
+				for j := 0; j < i; j++ {
+					if j%2 == 0 {
+						sl.PushBack(intToElem(j))
+					} else {
+						sl.PushFront(intToElem(j))
+					}
+				}
+
 				benchmarkRandomOpSequenceWithISKipList(ops, &sl, nops)
 			}
 		})
 
-		var slb BufferedISkipList
-		slb.Seed(randSeed1, randSeed2)
-		for j := 0; j < i; j++ {
-			if j%2 == 0 {
-				slb.PushBack(intToElem(j))
-			} else {
-				slb.PushFront(intToElem(j))
-			}
-		}
 		b.Run(fmt.Sprintf("With BufferedISkipList [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
+				var slb BufferedISkipList
+				slb.Seed(randSeed1, randSeed2)
+				for j := 0; j < i; j++ {
+					if j%2 == 0 {
+						slb.PushBack(intToElem(j))
+					} else {
+						slb.PushFront(intToElem(j))
+					}
+				}
+
 				benchmarkRandomOpSequenceWithBufferedISKipList(ops, &slb, nops)
 			}
 		})
-	}
-}
-
-func TestRandomOpSequence2(t *testing.T) {
-	const nops = 10 //500
-	const n = 10
-
-	for i := 0; i < 100000; i += 1000 {
-		ops := sliceutils.GenOps(nops, i)
-
-		for j := 0; j < n; j++ {
-			a := make([]iskiplist.ElemType, i)
-			for j := 0; j < i; j++ {
-				a[j] = intToElem(j)
-			}
-			benchmarkRandomOpSequenceWithSlice(ops, a, nops)
-		}
-
-		for j := 0; j < n; j++ {
-			var sl iskiplist.ISkipList
-			sl.Seed(randSeed1, randSeed2)
-			for j := 0; j < i; j++ {
-				if j%2 == 0 {
-					sl.PushBack(intToElem(j))
-				} else {
-					sl.PushFront(intToElem(j))
-				}
-			}
-
-			fmt.Printf("i = %v, len=%v\n", i, sl.Length())
-			benchmarkRandomOpSequenceWithISKipList(ops, &sl, nops)
-		}
-
-		for j := 0; j < n; j++ {
-			var slb BufferedISkipList
-			slb.Seed(randSeed1, randSeed2)
-			for j := 0; j < i; j++ {
-				if j%2 == 0 {
-					slb.PushBack(intToElem(j))
-				} else {
-					slb.PushFront(intToElem(j))
-				}
-			}
-			benchmarkRandomOpSequenceWithBufferedISKipList(ops, &slb, nops)
-		}
 	}
 }
