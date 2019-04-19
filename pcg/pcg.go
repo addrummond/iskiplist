@@ -1,7 +1,6 @@
+// Package pcg is an internal package
 // Taken from https://raw.githubusercontent.com/MichaelTJones/pcg/master/pcg32.go
-// PCG32 has been renamed to pcg32, and NewPCG32 has been renamed to newPCG32.
-
-package iskiplist
+package pcg
 
 // PCG Random Number Generation
 // Developed by Melissa O'Neill <oneill@pcg-random.org>
@@ -25,22 +24,29 @@ const (
 	pcg32Multiplier = 0x5851f42d4c957f2d //  6364136223846793005
 )
 
-type pcg32 struct {
+type Pcg32 struct {
 	state     uint64
 	increment uint64
 }
 
-func newPCG32() *pcg32 {
-	return &pcg32{pcg32State, pcg32Increment}
+// IsUninitialized was added by addrummond
+// 'state' must be odd, so we know this is in its uninitialized state if 'state'
+// is zero.
+func (p *Pcg32) IsUninitialized() bool {
+	return p.state == 0
 }
 
-func (p *pcg32) Seed(state, sequence uint64) *pcg32 {
+func NewPCG32() *Pcg32 {
+	return &Pcg32{pcg32State, pcg32Increment}
+}
+
+func (p *Pcg32) Seed(state, sequence uint64) *Pcg32 {
 	p.increment = (sequence << 1) | 1
 	p.state = (state+p.increment)*pcg32Multiplier + p.increment
 	return p
 }
 
-func (p *pcg32) Random() uint32 {
+func (p *Pcg32) Random() uint32 {
 	// Advance 64-bit linear congruential generator to new state
 	oldState := p.state
 	p.state = oldState*pcg32Multiplier + p.increment
@@ -51,7 +57,7 @@ func (p *pcg32) Random() uint32 {
 	return (xorShifted >> rot) | (xorShifted << ((-rot) & 31))
 }
 
-func (p *pcg32) Bounded(bound uint32) uint32 {
+func (p *Pcg32) Bounded(bound uint32) uint32 {
 	if bound == 0 {
 		return 0
 	}
@@ -64,16 +70,16 @@ func (p *pcg32) Bounded(bound uint32) uint32 {
 	}
 }
 
-func (p *pcg32) Advance(delta uint64) *pcg32 {
+func (p *Pcg32) Advance(delta uint64) *Pcg32 {
 	p.state = p.advanceLCG64(p.state, delta, pcg32Multiplier, p.increment)
 	return p
 }
 
-func (p *pcg32) Retreat(delta uint64) *pcg32 {
+func (p *Pcg32) Retreat(delta uint64) *Pcg32 {
 	return p.Advance(-delta)
 }
 
-func (p *pcg32) advanceLCG64(state, delta, curMult, curPlus uint64) uint64 {
+func (p *Pcg32) advanceLCG64(state, delta, curMult, curPlus uint64) uint64 {
 	accMult := uint64(1)
 	accPlus := uint64(0)
 	for delta > 0 {

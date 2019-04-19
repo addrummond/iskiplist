@@ -35,7 +35,7 @@ very very very rarely assign 30 levels to a short skip list.
 func nTosses(l *ISkipList) int {
 	// The PCG state has to be odd, so we know that it's uninitialized if the
 	// state is zero.
-	if l.rand.state == 0 {
+	if l.rand.IsUninitialized() {
 		fastSeed(l)
 	}
 

@@ -62,6 +62,8 @@ import (
 	// actually unsafe (so long as conversion isn't performed in the other
 	// direction!)
 	"unsafe"
+
+	"github.com/addrummond/iskiplist/pcg"
 )
 
 // This is approximately (1/e)*UINT32_MAX. According to the following article,
@@ -80,7 +82,7 @@ const maxLevels = 30
 const minIndexToCache = 8
 
 func fastSeed(l *ISkipList) {
-	l.rand = *newPCG32()
+	l.rand = *pcg.NewPCG32()
 
 	// Use the address of the ISkipList to seed the RNG. This is not ideal,
 	// but it's cheap. For any given execution of any given program,
@@ -104,12 +106,13 @@ func fastSeed(l *ISkipList) {
 	l.Seed(seed1, seed2)
 }
 
-// ElemType is the type of an element in the skip list.
+// ElemType is the type of an element of an ISkipList.
 type ElemType = int
 
 // ^^ ElemType can be any type that can be converted to and from an int without
 // loss. Make corresponding modifications to 'elemToDist' and 'distToElem' if
-// you modify this definition.
+// you modify this definition (and to 'elemType' in sliceutils.go and
+// 'intToElem' in sliceutils.go and buffered_test.go).
 
 // convert something of ElemType to a distance represented as an int
 func elemToDist(e ElemType) int {
@@ -151,7 +154,7 @@ type ISkipList struct {
 	length  int
 	nLevels int32 // number of levels - 1; int32 is more than enough for this, saves a bit of space on archs that allow 4-byte align
 	root    *listNode
-	rand    pcg32
+	rand    pcg.Pcg32
 	cache   *indexCache
 }
 
@@ -619,7 +622,7 @@ func remove(l *ISkipList, node *listNode, index int, prevs []*listNode, prevIndi
 // the removed element.
 func (l *ISkipList) Remove(index int) ElemType {
 	if index < 0 || index >= l.length {
-		panic("Index out of range in call to 'Remove'")
+		panic(fmt.Sprintf("Index %v %v out of range in call to 'Remove'", index, l.length))
 	}
 
 	if l.cache != nil && l.cache.index >= index {
@@ -1074,7 +1077,10 @@ func debugPrintList(node *listNode, pointerDigits int) string {
 	return s.String()
 }
 
-func debugPrintISkipList(l *ISkipList, pointerDigits int) string {
+// DebugPrintISkipList returns a string representation of an ISkipList that is
+// useful for debugging. There is no guarantee that this output will remain
+// consistent between versions of this package.
+func DebugPrintISkipList(l *ISkipList, pointerDigits int) string {
 	var s strings.Builder
 
 	s.WriteString(fmt.Sprintf("ISkipList of length %v with %v levels:\n", l.length, l.nLevels+1))

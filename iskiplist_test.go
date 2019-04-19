@@ -3,6 +3,8 @@ package iskiplist
 import (
 	"fmt"
 	"testing"
+
+	"github.com/addrummond/iskiplist/sliceutils"
 )
 
 const (
@@ -14,20 +16,30 @@ func TestCopy(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 10; i++ {
-		sl.PushBack(i)
+		sl.PushBack(distToElem(i))
 	}
 	sl2 := sl.Copy()
-	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
-	t.Logf("%v\n", debugPrintISkipList(sl2, 3))
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", DebugPrintISkipList(sl2, 3))
+}
+
+func TestCopyNoops(t *testing.T) {
+	var sl ISkipList
+	sl.Seed(randSeed1, randSeed2)
+	sl.PushBack(distToElem(1))
+	sl.PushBack(distToElem(2))
+	slice := make([]ElemType, 0)
+	sl.CopyRange(1, 0)
+	sl.CopyRangeToSlice(1, 0, slice)
 }
 
 func TestInsertAtBeginning(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
 	for i := 0; i < 10; i++ {
-		sl.Insert(0, i)
+		sl.Insert(0, distToElem(i))
 	}
-	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 	if sl.nLevels+1 != 3 {
 		t.Errorf("Unexpected number of levels in result (expected 3, got %v)\n", sl.nLevels+1)
 	}
@@ -37,15 +49,15 @@ func TestRemoveFromBeginning(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 20; i++ {
-		t.Logf("%v\n", debugPrintISkipList(&sl, 3))
-		sl.Insert(0, i)
+		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+		sl.Insert(0, distToElem(i))
 	}
-	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 	for i := 0; i < 20; i++ {
 		if sl.Remove(0) != 20-i-1 {
 			t.Errorf("Unexpected value removed.\n")
 		}
-		t.Logf("Removed an element:\n%v\n", debugPrintISkipList(&sl, 3))
+		t.Logf("Removed an element:\n%v\n", DebugPrintISkipList(&sl, 3))
 	}
 	if sl.Length() != 0 || sl.length != 0 || sl.nLevels != 0 || sl.root != nil || sl.cache != nil {
 		t.Errorf("Unexpected result following removals.\n")
@@ -56,17 +68,17 @@ func TestRemoveAtTwo(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 20; i++ {
-		t.Logf("%v\n", debugPrintISkipList(&sl, 3))
-		sl.Insert(0, i)
+		t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
+		sl.Insert(0, distToElem(i))
 	}
-	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 	ev := 17
 	for i := 0; i < 18; i++ {
 		v := sl.Remove(2)
 		if v != ev {
 			t.Errorf("Unexpected value removed (%v vs %v).\n", v, ev)
 		}
-		t.Logf("Removed an element:\n%v\n", debugPrintISkipList(&sl, 3))
+		t.Logf("Removed an element:\n%v\n", DebugPrintISkipList(&sl, 3))
 		ev--
 	}
 	if sl.Length() != 2 {
@@ -84,7 +96,7 @@ func TestTruncate(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(12345, 67891) // not using randSeed1 and randSeed2 because this test depends on a particular value for the random seeds
 	for i := 0; i < l; i++ {
-		sl.PushFront(0)
+		sl.PushFront(distToElem(0))
 	}
 	err := false
 	t.Logf("Number of levels with %v elems: %v\n", l, sl.nLevels+1)
@@ -117,7 +129,7 @@ func TestTruncate(t *testing.T) {
 		err = true
 	}
 
-	t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+	t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 
 	if err {
 		t.Errorf("Unexpected number of levels.")
@@ -129,19 +141,19 @@ func TestTruncate(t *testing.T) {
 func TestCreateAndIter(t *testing.T) {
 	type insert struct {
 		index int
-		value int
+		value ElemType
 	}
 	type tst struct {
 		inserts []insert
-		result  []int
+		result  []ElemType
 	}
 
 	tsts := []tst{
-		{[]insert{{0, 0}, {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}, {8, 8}, {9, 9}, {10, 10}},
-			[]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		{[]insert{{0, distToElem(0)}, {1, distToElem(1)}, {2, distToElem(2)}, {3, distToElem(3)}, {4, distToElem(4)}, {5, distToElem(5)}, {6, distToElem(6)}, {7, distToElem(7)}, {8, distToElem(8)}, {9, distToElem(9)}, {10, distToElem(10)}},
+			[]ElemType{distToElem(0), distToElem(1), distToElem(2), distToElem(3), distToElem(4), distToElem(5), distToElem(6), distToElem(7), distToElem(8), distToElem(9), distToElem(10)},
 		},
-		{[]insert{{0, 10}, {0, 9}, {0, 8}, {0, 7}, {0, 6}, {0, 5}, {0, 4}, {0, 3}, {0, 2}, {0, 1}, {0, 0}},
-			[]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		{[]insert{{0, distToElem(10)}, {0, distToElem(9)}, {0, distToElem(8)}, {0, distToElem(7)}, {0, distToElem(6)}, {0, distToElem(5)}, {0, distToElem(4)}, {0, distToElem(3)}, {0, distToElem(2)}, {0, distToElem(1)}, {0, distToElem(0)}},
+			[]ElemType{distToElem(0), distToElem(1), distToElem(2), distToElem(3), distToElem(4), distToElem(5), distToElem(6), distToElem(7), distToElem(8), distToElem(9), distToElem(10)},
 		},
 	}
 
@@ -168,7 +180,7 @@ func TestCreateAndIter(t *testing.T) {
 		}
 
 		// Test iterating through the by copying it to a slice.
-		cpy := make([]int, len(ts.result))
+		cpy := make([]ElemType, len(ts.result))
 		sl.CopyToSlice(cpy)
 		for i, v := range cpy {
 			if v != ts.result[i] {
@@ -177,7 +189,7 @@ func TestCreateAndIter(t *testing.T) {
 		}
 
 		// Test iterating through part of the list by copying it to a slice.
-		middle := make([]int, len(ts.result)-4)
+		middle := make([]ElemType, len(ts.result)-4)
 		sl.CopyRangeToSlice(2, sl.Length()-2, middle)
 		for i, v := range middle {
 			if v != ts.result[i+2] {
@@ -210,30 +222,30 @@ func TestCreateAndIter(t *testing.T) {
 
 // TestInsertAndSwap runs a simple test of the Insert() and Swap() methods.
 func TestInsertAndSwap(t *testing.T) {
-	var expected = []int{
-		0, 1, 99, 99, 4, 88, 2, 3, 88, 5, 6, 7, 8, 9,
+	var expected = []ElemType{
+		distToElem(0), distToElem(1), distToElem(99), distToElem(99), distToElem(4), distToElem(88), distToElem(2), distToElem(3), distToElem(88), distToElem(5), distToElem(6), distToElem(7), distToElem(8), distToElem(9),
 	}
 
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < 10; i++ {
 		t.Logf("Inserting %v\n", i)
-		sl.Insert(i, i)
-		t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+		sl.Insert(i, distToElem(i))
+		t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 	}
 	for i := 0; i < 2; i++ {
 		t.Logf("Inserting 99\n")
-		sl.Insert(2, 99)
-		t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+		sl.Insert(2, distToElem(99))
+		t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 	}
 	for i := 0; i < 2; i++ {
 		t.Logf("Inserting 88\n")
-		sl.Insert(4, 88)
-		t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+		sl.Insert(4, distToElem(88))
+		t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 	}
 
 	sl.Swap(4, 8)
-	t.Logf("%s\n", debugPrintISkipList(&sl, 3))
+	t.Logf("%s\n", DebugPrintISkipList(&sl, 3))
 
 	if sl.Length() != len(expected) {
 		t.Errorf("Expected length %v, actual length %v\n", len(expected), sl.Length())
@@ -252,18 +264,21 @@ func TestInsertAndSwap(t *testing.T) {
 // then applies these operations to both an ISkipList and a slice. The end
 // results should match.
 func TestRandomOpSequences(t *testing.T) {
+	const nops = 1000
+	const niters = 20
+
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
-	for i := 1; i < 200; i++ {
-		t.Logf("----- Generating random sequence of %v operations -----\n", i)
-		ops := genOps(i)
+	for i := 0; i < niters; i++ {
+		t.Logf("----- Generating random sequence of %v operations -----\n", nops)
+		ops := sliceutils.GenOps(nops, 0)
 		sl.Clear()
-		a := make([]int, 0)
+		a := make([]ElemType, 0)
 		for _, o := range ops {
-			t.Logf("%s\n", printOp(&o))
-			applyToSlice(&o, &a)
-			applyToISkipList(&o, &sl)
-			t.Logf("%v\n", debugPrintISkipList(&sl, 3))
+			t.Logf("%s\n", sliceutils.PrintOp(&o))
+			sliceutils.ApplyOpToSlice(&o, &a)
+			applyOpToISkipList(&o, &sl)
+			t.Logf("%v\n", DebugPrintISkipList(&sl, 3))
 			t.Logf("%+v\n", a)
 
 			t.Logf("Reported lengths: %v %v\n", sl.Length(), len(a))
@@ -303,43 +318,44 @@ func TestRandomOpSequences(t *testing.T) {
 	}
 }
 
-func benchmarkRandomOpSequenceWithISKipList(ops []op, sl *ISkipList, l int) {
+func benchmarkRandomOpSequenceWithISKipList(ops []sliceutils.Op, sl *ISkipList, l int) {
 	for _, o := range ops {
-		applyToISkipList(&o, sl)
+		applyOpToISkipList(&o, sl)
 	}
 }
 
-func benchmarkRandomOpSequenceWithSlice(ops []op, a []int, l int) {
+func benchmarkRandomOpSequenceWithSlice(ops []sliceutils.Op, a []ElemType, l int) {
 	for _, o := range ops {
-		applyToSlice(&o, &a)
+		sliceutils.ApplyOpToSlice(&o, &a)
 	}
 }
 
 func BenchmarkRandomOpSequence(b *testing.B) {
 	const nops = 500
 
-	ops := genOps(nops)
+	ops := sliceutils.GenOps(nops, 0)
 
 	for i := 0; i < 100000; i += 1000 {
-		var sl ISkipList
-		sl.Seed(randSeed1, randSeed2)
-		for j := 0; j < i; j++ {
-			sl.PushBack(j)
-		}
-		b.Run(fmt.Sprintf("With ISkipList [initial length %v, n_ops=%v]", i, nops), func(b *testing.B) {
+		b.Run(fmt.Sprintf("With slice [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
-				benchmarkRandomOpSequenceWithISKipList(ops, &sl, nops)
+				a := make([]ElemType, i)
+				for j := 0; j < i; j++ {
+					a[j] = j
+				}
+
+				benchmarkRandomOpSequenceWithSlice(ops, a, nops)
 			}
 		})
 
-		a := make([]int, i)
-		for j := 0; j < i; j++ {
-			a[j] = j
-		}
-		b.Run(fmt.Sprintf("With slice [initial length %v, n_ops=%v]", i, nops), func(b *testing.B) {
+		b.Run(fmt.Sprintf("With ISkipList [initial length=%v, n_ops=%v]", i, nops), func(b *testing.B) {
+			var sl ISkipList
+			sl.Seed(randSeed1, randSeed2)
+			for j := 0; j < i; j++ {
+				sl.PushFront(distToElem(j))
+			}
 
 			for j := 0; j < b.N; j++ {
-				benchmarkRandomOpSequenceWithSlice(ops, a, nops)
+				benchmarkRandomOpSequenceWithISKipList(ops, &sl, nops)
 			}
 		})
 	}
@@ -383,7 +399,7 @@ func BenchmarkCreationMethods(b *testing.B) {
 	for i := 0; i < 100000; i += 1000 {
 		b.Run(fmt.Sprintf("Creating slice of length %v", i), func(b *testing.B) {
 			for j := 0; j < b.N; j++ {
-				a := make([]int, i, i)
+				a := make([]ElemType, i, i)
 				for k := 0; k < len(a); k++ {
 					a[k] = k
 				}
@@ -410,104 +426,13 @@ func BenchmarkCreationMethods(b *testing.B) {
 	}
 }
 
-type opKind int
-
-const (
-	opInsert = iota
-	opRemove
-	opSwap
-)
-
-type op struct {
-	kind   opKind
-	index1 int
-	index2 int
-	elem   ElemType
-}
-
-func printOp(op *op) string {
-	switch op.kind {
-	case opInsert:
-		return fmt.Sprintf("Insert %v at index %v\n", op.elem, op.index1)
-	case opRemove:
-		return fmt.Sprintf("Remove element at index %v\n", op.index1)
-	case opSwap:
-		return fmt.Sprintf("Swap element at index %v with element at index %v\n", op.index1, op.index2)
-	default:
-		panic("Unrecognized op")
+func applyOpToISkipList(op *sliceutils.Op, sl *ISkipList) {
+	switch op.Kind {
+	case sliceutils.OpInsert:
+		sl.Insert(op.Index1, op.Elem)
+	case sliceutils.OpRemove:
+		sl.Remove(op.Index1)
+	case sliceutils.OpSwap:
+		sl.Swap(op.Index1, op.Index2)
 	}
-}
-
-func applyToSlice(op *op, a *[]int) {
-	switch op.kind {
-	case opInsert:
-		if len(*a) == 0 && op.index1 == 0 {
-			*a = append(*a, op.elem)
-		} else {
-			var def ElemType
-			*a = append(*a, def)
-			for i := len(*a) - 1; i > op.index1; i-- {
-				(*a)[i] = (*a)[i-1]
-			}
-			(*a)[op.index1] = op.elem
-		}
-	case opRemove:
-		for i := op.index1; i < len(*a)-1; i++ {
-			(*a)[i] = (*a)[i+1]
-		}
-		*a = (*a)[:len(*a)-1]
-	case opSwap:
-		(*a)[op.index1], (*a)[op.index2] = (*a)[op.index2], (*a)[op.index1]
-	}
-}
-
-func applyToISkipList(op *op, sl *ISkipList) {
-	switch op.kind {
-	case opInsert:
-		sl.Insert(op.index1, op.elem)
-	case opRemove:
-		sl.Remove(op.index1)
-	case opSwap:
-		sl.Swap(op.index1, op.index2)
-	}
-}
-
-var randState *pcg32
-
-func genOps(n int) []op {
-	if randState == nil {
-		randState = newPCG32()
-		randState.Seed(randSeed1, randSeed2)
-	}
-
-	// insert 50% of the time, swap 25% of the time, remove 25% of the time.
-
-	ops := make([]op, n)
-	slLen := 0
-	for i := 0; i < n; i++ {
-		r := randState.Random()
-		if slLen == 0 || r < ^uint32(0)/2 {
-			ops[i].kind = opInsert
-			ops[i].elem = int(r)
-			if ops[i].elem != 0 {
-				ops[i].elem %= 100
-			}
-			if slLen == 0 {
-				ops[i].index1 = 0
-			} else {
-				ops[i].index1 = int(r) % slLen
-			}
-			slLen++
-		} else if slLen >= 1 && r < (^uint32(0)/4)*3 {
-			ops[i].kind = opSwap
-			ops[i].index1 = int(r) % slLen
-			ops[i].index2 = int(randState.Random()) % slLen
-		} else {
-			ops[i].kind = opRemove
-			ops[i].index1 = int(r) % slLen
-			slLen--
-		}
-	}
-
-	return ops
 }
