@@ -10,7 +10,8 @@ slices, but with different big O characteristics).
 
 Each element of an `ISkipList` is an `int`. The idea is to use the `int` value
 as an index into a slice of the data structure of your choice. If this isn't
-feasible, you can modify `ElemType`, `elemToDist` and `distToElem`.
+feasible, you can modify `ElemType` in `iskiplist.go` and a handful of other
+definitions. See the comment below the definition of `ElemType` for details.
 
 Each `ISkipList` maintains its own local PCG pseudorandom number generator
 state.
