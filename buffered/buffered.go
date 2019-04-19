@@ -385,9 +385,8 @@ func (l *BufferedISkipList) IterateRange(from, to int, f func(*iskiplist.ElemTyp
 			if !f(elem) {
 				broke = true
 				return false
-			} else {
-				return true
 			}
+			return true
 		})
 		if broke {
 			return
