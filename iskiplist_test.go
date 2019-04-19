@@ -270,7 +270,7 @@ func TestRandomOpSequences(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
 	for i := 0; i < niters; i++ {
-		t.Logf("----- Generating random sequence of %v operations -----\n", i)
+		t.Logf("----- Generating random sequence of %v operations -----\n", nops)
 		ops := sliceutils.GenOps(nops, 0)
 		sl.Clear()
 		a := make([]ElemType, 0)
