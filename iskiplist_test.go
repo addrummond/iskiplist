@@ -266,7 +266,7 @@ func TestInsertAndSwap(t *testing.T) {
 func TestRandomOpSequences(t *testing.T) {
 	var sl ISkipList
 	sl.Seed(randSeed1, randSeed2)
-	for i := 1; i < 200; i++ {
+	for i := 1; i < 10000; i++ {
 		t.Logf("----- Generating random sequence of %v operations -----\n", i)
 		ops := sliceutils.GenOps(i, 0)
 		sl.Clear()
