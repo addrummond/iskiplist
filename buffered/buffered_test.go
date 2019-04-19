@@ -90,7 +90,6 @@ func TestRandomOpSequences(t *testing.T) {
 		sl.Clear()
 		a := make([]int, 0)
 		for _, o := range ops {
-			t.Logf("%v\n", debugPrintISkipList(&sl, 3))
 			t.Logf("%s\n", sliceutils.PrintOp(&o))
 			sliceutils.ApplyOpToSlice(&o, &a)
 			applyOpToBufferedISkipList(&o, &sl)
