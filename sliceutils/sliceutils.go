@@ -10,8 +10,12 @@ import (
 
 type elemType = int
 
+func intToElem(i int) elemType {
+	return i
+}
+
 func SliceInsert(a *[]elemType, index int, elem elemType) {
-	if len(*a) == 0 && index == 0 {
+	if len(*a) == index {
 		*a = append(*a, elem)
 	} else {
 		last := (*a)[len(*a)-1]
@@ -83,6 +87,14 @@ const (
 var randState *pcg.Pcg32
 
 func GenOps(n int, initialLength int) []Op {
+	return genOpsHelper(n, initialLength, false)
+}
+
+func GenOpsWithLotsOfPushing(n int, initialLength int) []Op {
+	return genOpsHelper(n, initialLength, true)
+}
+
+func genOpsHelper(n int, initialLength int, lotsOfPushing bool) []Op {
 	if randState == nil {
 		randState = pcg.NewPCG32()
 		randState.Seed(randSeed1, randSeed2)
@@ -91,12 +103,26 @@ func GenOps(n int, initialLength int) []Op {
 	ops := make([]Op, n)
 	for i := 0; i < n; i++ {
 		r := randState.Random()
-		if initialLength == 0 || r < (^uint32(0))/3 {
+		if lotsOfPushing && r&1 == 0 {
 			ops[i].Kind = OpInsert
-			ops[i].Elem = int(r)
-			if ops[i].Elem != 0 {
-				ops[i].Elem %= 100
+			e := int(r)
+			if e != 0 {
+				e %= 100
 			}
+			ops[i].Elem = intToElem(e)
+			if r&2 == 0 {
+				ops[i].Index1 = 0
+			} else {
+				ops[i].Index1 = initialLength
+			}
+			initialLength++
+		} else if initialLength == 0 || r < (^uint32(0))/3 {
+			ops[i].Kind = OpInsert
+			e := int(r)
+			if e != 0 {
+				e %= 100
+			}
+			ops[i].Elem = intToElem(e)
 			if initialLength == 0 {
 				ops[i].Index1 = 0
 			} else {

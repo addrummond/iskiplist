@@ -52,6 +52,7 @@ func checkStartSliceGrowth(l *BufferedISkipList) {
 
 func checkEndSliceGrowth(l *BufferedISkipList) {
 	if len(l.end) >= maxSliceLength {
+		panic("HERE")
 		for _, v := range l.end {
 			l.iskiplist.PushBack(v)
 		}

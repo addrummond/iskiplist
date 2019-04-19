@@ -86,7 +86,7 @@ func TestRandomOpSequences(t *testing.T) {
 	sl.Seed(randSeed1, randSeed2)
 	for i := 1; i < niters; i++ {
 		t.Logf("----- Generating random sequence of %v operations -----\n", nops)
-		ops := sliceutils.GenOps(nops, 0)
+		ops := sliceutils.GenOpsWithLotsOfPushing(nops, 0)
 		sl.Clear()
 		a := make([]int, 0)
 		for _, o := range ops {

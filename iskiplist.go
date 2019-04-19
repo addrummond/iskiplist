@@ -112,7 +112,7 @@ type ElemType = int
 // ^^ ElemType can be any type that can be converted to and from an int without
 // loss. Make corresponding modifications to 'elemToDist' and 'distToElem' if
 // you modify this definition (and to 'elemType' in sliceutils.go and
-// 'intToElem' in buffered_test.go).
+// 'intToElem' in sliceutils.go and buffered_test.go).
 
 // convert something of ElemType to a distance represented as an int
 func elemToDist(e ElemType) int {
