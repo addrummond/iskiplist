@@ -52,7 +52,6 @@ func checkStartSliceGrowth(l *BufferedISkipList) {
 
 func checkEndSliceGrowth(l *BufferedISkipList) {
 	if len(l.end) >= maxSliceLength {
-		panic("HERE")
 		for _, v := range l.end {
 			l.iskiplist.PushBack(v)
 		}
@@ -299,7 +298,6 @@ func (l *BufferedISkipList) Remove(index int) iskiplist.ElemType {
 }
 
 func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
-	ln := l.Length()
 	if index < 0 || index > l.Length() {
 		panic("Index out of range in call to 'Insert'")
 	}
@@ -327,7 +325,7 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 
 	// insertion within 'end' where 'end' is small
 	if index >= len(l.start)+l.iskiplist.Length() && len(l.end) <= noHoldsBarredMaxLength {
-		sliceutils.SliceInsert(&l.start, index-len(l.start)-l.iskiplist.Length(), elem)
+		sliceutils.SliceInsert(&l.end, index-len(l.start)-l.iskiplist.Length(), elem)
 		return
 	}
 
@@ -338,7 +336,7 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	}
 
 	// insertion within 'start' where 'start' is large
-	if index < len(l.start) {
+	if index <= len(l.start) {
 		// Say we are inserting X before the elem at index 2, i.e. elem C:
 		//
 		//     idx: 3  2  1 0    4    5    6    7                   8...
@@ -366,11 +364,11 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	//
 	// example of inserting X before elem at index len(start)+iskiplist.Length()+2
 	//
-	// ...    A -> B -> C -> D                   E F (G) H
+	//     ...    A -> B -> C -> D                   E F (G) H
 	//
 	// to
 	//
-	// ...    A -> B -> C -> D -> E -> F -> X    (G) H
+	//     ...    A -> B -> C -> D -> E -> F -> X    (G) H
 	if index < len(l.start)+l.iskiplist.Length() {
 		panic("Internal error in 'Insert'")
 	}
@@ -380,9 +378,6 @@ func (l *BufferedISkipList) Insert(index int, elem iskiplist.ElemType) {
 	}
 	l.iskiplist.PushBack(elem)
 	l.end = l.end[upto:]
-	if l.Length() != ln+1 {
-		panic(fmt.Sprintf("BUG! %v %v", l.Length(), ln+1))
-	}
 }
 
 func (l *BufferedISkipList) IterateRange(from, to int, f func(*iskiplist.ElemType) bool) {
