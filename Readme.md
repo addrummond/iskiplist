@@ -18,3 +18,5 @@ state.
 ## Documentation
 
 https://godoc.org/github.com/addrummond/iskiplist
+
+https://godoc.org/github.com/addrummond/iskiplist/buffered
