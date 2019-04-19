@@ -622,7 +622,7 @@ func remove(l *ISkipList, node *listNode, index int, prevs []*listNode, prevIndi
 // the removed element.
 func (l *ISkipList) Remove(index int) ElemType {
 	if index < 0 || index >= l.length {
-		panic("Index out of range in call to 'Remove'")
+		panic(fmt.Sprintf("Index %v %v out of range in call to 'Remove'", index, l.length))
 	}
 
 	if l.cache != nil && l.cache.index >= index {

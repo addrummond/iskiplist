@@ -283,7 +283,7 @@ func (l *BufferedISkipList) Swap(index1, index2 int) {
 
 func (l *BufferedISkipList) Remove(index int) iskiplist.ElemType {
 	if index < 0 || index >= l.Length() {
-		panic("Index out of range in call to 'Remove'")
+		panic(fmt.Sprintf("Index %v out of range in call to 'Remove' (length %v)", index, l.Length()))
 	}
 
 	if index < len(l.start) {
