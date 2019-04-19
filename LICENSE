@@ -20,7 +20,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+-----
+
 The preceding license applies to all of the files in this repository apart
 from pcg.go, which is a Go port by Michael T Jones of a C library by Melissa
-O'Neill. This code is licensed under the Apache license. See the comments at
-the beginning of pcg.go for details.
+O'Neill. The code in pcg.go is licensed under the Apache license. See the
+comments at the beginning of pcg.go for details.
