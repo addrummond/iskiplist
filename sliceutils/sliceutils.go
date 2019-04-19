@@ -1,5 +1,5 @@
-// Package sliceutils is an internal package providing various utility
-// functions, some of which are used only in tests.
+// Package sliceutils is an internal package used by
+// github.com/addrummond/iskiplist.
 package sliceutils
 
 import (
