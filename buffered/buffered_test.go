@@ -166,7 +166,6 @@ func BenchmarkRandomOpSequence(b *testing.B) {
 				benchmarkRandomOpSequenceWithBufferedISKipList(ops, &sl, nops)
 			}
 		})
-		fmt.Printf("SL LEN %v\n", sl.Length())
 
 		a := make([]int, i)
 		for j := 0; j < i; j++ {
