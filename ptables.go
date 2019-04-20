@@ -360,7 +360,7 @@ var pTable = [...]uint32{
 	4294967271,
 	4294967286,
 	4294967292,
-	// nTosses will re-roll if we get her
+	// nTosses will re-roll if we get here
 }
 
 const pTable8Zoff = 0
