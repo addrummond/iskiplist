@@ -59,7 +59,13 @@ func nTosses(l *ISkipList) int {
 	return maxLevels
 }
 
-func estimateNLevelsFromLength(l *ISkipList, n int) int {
+func estimateNLevelsFromLength(l *ISkipList, ni int) int {
+	// We want the code to handle lengths greater than 2^31, but also to build
+	// on i386. In the latter case, 'int' is 32 bits and some of the constants
+	// below overflow it. Explicitly casting to a 64-bit int allows the code
+	// below to work on both 32-bit and 64-bit architectures.
+	n := int64(ni)
+
 	nLevels := 0
 outer:
 	for n > 0 {
