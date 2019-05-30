@@ -842,7 +842,7 @@ func (l *ISkipList) PushFront(elem ElemType) {
 }
 
 // PopFront removes the first element of the list and returns it. The second
-// return value is true iff the list was prior to the pop. PopFront
+// return value is true iff the list was non-empty prior to the pop. PopFront
 // runs in constant time.
 func (l *ISkipList) PopFront() (r ElemType, ok bool) {
 	if l.length == 0 {
