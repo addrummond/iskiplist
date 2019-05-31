@@ -28,7 +28,7 @@
 // The behavior of the iteration methods mentioned in the preceding paragraph is
 // unspecified if the ISkipList is mutated within the callback function.
 // (Mutating the element itself is fine – you just can't insert or remove
-// elements.) If you wish to mutate an ISkipList while iterating thorugh it, you
+// elements.) If you wish to mutate an ISkipList while iterating through it, you
 // should iterate by index.
 //
 // The most efficient way to build an ISkipList is to add elements sequentially
