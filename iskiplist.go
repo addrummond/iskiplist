@@ -663,7 +663,7 @@ func (l *ISkipList) Truncate(n int) {
 	if n < 0 || n > l.length {
 		panic(fmt.Sprintf("Out of bounds index %v into ISkipList %+v", n, l))
 	}
-	if n >= l.length {
+	if n == l.length {
 		return
 	}
 
