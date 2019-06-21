@@ -2,7 +2,6 @@ package iskiplist
 
 import (
 	"fmt"
-	"math/rand"
 	"testing"
 
 	"github.com/addrummond/iskiplist/sliceutils"
@@ -425,27 +424,6 @@ func BenchmarkCreationMethods(b *testing.B) {
 			}
 		})
 	}
-}
-
-func BenchmarkBoundsCheckVsCast(b *testing.B) {
-	rand.Seed(123)
-	randlen := int(rand.Int31() % 1024)
-	var a1 [1]int
-	a2 := make([]int, randlen) // compiler surely won't be able to elide bounds checks for array with rand length
-	var intf interface{}
-
-	b.Run(fmt.Sprintf("Bounds checks"), func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			copy(a1[:], a2) // this will have to perform a bounds check on a2
-		}
-	})
-
-	b.Run(fmt.Sprintf("Casts"), func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			intf = randlen
-			a1[0] = intf.(int)
-		}
-	})
 }
 
 func applyOpToISkipList(op *sliceutils.Op, sl *ISkipList) {
