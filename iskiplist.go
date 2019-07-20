@@ -60,6 +60,7 @@ package iskiplist
 import (
 	"fmt"
 	"strings"
+
 	// 'unsafe' is used only to get integer values from pointers, which is not
 	// actually unsafe (so long as conversion isn't performed in the other
 	// direction!)
@@ -624,7 +625,7 @@ func remove(l *ISkipList, node *listNode, index int, prevs []*listNode, prevIndi
 // the removed element.
 func (l *ISkipList) Remove(index int) ElemType {
 	if index < 0 || index >= l.length {
-		panic(fmt.Sprintf("Index %v %v out of range in call to 'Remove'", index, l.length))
+		panic(fmt.Sprintf("Index %v out of range in call to 'Remove'", index))
 	}
 
 	if l.cache != nil && l.cache.index >= index {
@@ -654,6 +655,41 @@ func (l *ISkipList) Remove(index int) ElemType {
 	copyToCache(l, index-1, prevs, prevIndices)
 
 	return e
+}
+
+// SplitAt reduces the length of the ISKipList to n, keeping the first n
+// elements, and returns a new ISkipList consisting of the remaining elements.
+// If n is equal to the length of the ISkipList, the ISkipList is not modified
+// and an empty ISkipList is returned. If n is zero, the ISkipList is emptied
+// and a new ISkipList is returned with the same contents as the original
+// ISkipList. A pointer to an element at index < n of the ISkipList remains
+// valid following a call to SplitAt.
+func (l *ISkipList) SplitAt(n int) *ISkipList {
+	if n < 0 || n > l.length {
+		panic(fmt.Sprintf("Index %v out of range in call to 'SplitAt'", n))
+	}
+
+	if n == l.length {
+		return new(ISkipList)
+	}
+
+	if l.cache != nil && l.cache.index >= n {
+		l.cache.invalidate()
+	}
+
+	prevs := make([]*listNode, l.nLevels)
+	prevIndices := make([]int, l.nLevels)
+	node := getToWithPrevIndicesTryingCache(l, n-1, prevs, prevIndices)
+
+	for _, p := range prevs {
+
+	}
+
+	l.length = n
+	newNLevels := estimateNLevelsFromLength(l, n)
+	if newNLevels < int(l.nLevels) {
+		shrink(l, int(l.nLevels)-newNLevels)
+	}
 }
 
 // Truncate reduces the length of the ISkipList to n, keeping the first n
